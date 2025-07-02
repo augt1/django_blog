@@ -31,7 +31,6 @@ DEBUG = config("DEBUG", default=True, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*").split(",")
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -42,7 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "apps.blog",
-    "debug_toolbar",
+    "apps.users",
 ]
 
 MIDDLEWARE = [
@@ -126,3 +125,5 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = 'users.User'
