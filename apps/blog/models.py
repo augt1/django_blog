@@ -1,28 +1,31 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.contrib.auth import get_user_model
+
+from .managers import PublishedManager
 
 
 
 User = get_user_model()
 
 
-class Status(models.TextChoices):
-    DRAFT = 'draft', 'Draft'
-    PUBLISHED = 'published', 'Published'
-    ARCHIVED = 'archived', 'Archived'
-
-
 class Post(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = 'draft', 'Draft'
+        PUBLISHED = 'published', 'Published'
+        ARCHIVED = 'archived', 'Archived'
+
     title = models.CharField(max_length=100)
     content = models.TextField()
-    published = models.DateTimeField(default=timezone.now)
+    publish = models.DateTimeField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True, max_length=100)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
+    #TODO: add image field, tags, categories, comments from users
     
 
     def __str__(self):
@@ -33,10 +36,23 @@ class Post(models.Model):
         verbose_name_plural = "Posts"
         #TODO: think ordering and add indexes
         ordering = ['-created_at']
+    
+    objects = models.Manager()
+    published = PublishedManager()
+
 
     def save(self, *args, **kwargs):
-        self.slug = self.title.replace(' ', '-').lower()
+        if not self.slug:
+            self.slug = slugify(self.title)
+
+        if self.status == self.Status.PUBLISHED and not self.published:
+            self.published = timezone.now()
+
         super().save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('blog:post_detail', kwargs={'slug': self.slug})
+        return reverse('blog:post_detail', kwargs={
+            'year': self.published.year,
+            'month': self.published.month,
+            'day': self.published.day,
+            'slug': self.slug})
