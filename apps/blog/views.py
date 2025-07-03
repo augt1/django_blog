@@ -5,6 +5,7 @@ from .models import Post
 
 def posts_list(request):
     posts = Post.published.all()
+    #TODO: add pagination, search, filters
 
     return render(request, "blog/posts_list.html", {"posts": posts})
 

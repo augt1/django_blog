@@ -43,8 +43,11 @@ class Post(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
 
-        if self.status == self.Status.PUBLISHED and not self.published:
+        if self.status == self.Status.PUBLISHED and not self.publish_date:
             self.publish_date = timezone.now()
+        
+        if self.status == self.Status.DRAFT:
+            self.publish_date = None
 
         super().save(*args, **kwargs)
 

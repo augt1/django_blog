@@ -7,9 +7,9 @@
 
 {% block content %}
   <h1>{{ post.title }}</h1>
-  <p>Published on: {{ post.published_date }}</p>
+  <p>Published on: {{ post.publish_date }} by {{ post.author }}</p>
   <div class="post-content">
-    {{ post.content }}
+    {{ post.content|linebreaks }}
   </div>
-  <a href="{% url 'blog:post_list' %}">Back to posts</a>
+  <a href="{% url 'blog:posts_list' %}">Back to posts</a>
 {% endblock %}
