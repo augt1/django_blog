@@ -13,9 +13,9 @@ def post_detail(request, year, month, day, slug):
     post = get_object_or_404(
         Post,
         status=Post.Status.PUBLISHED,
-        publish__year=year,
-        publish__month=month,
-        publish__day=day,
+        publish_date__year=year,
+        publish_date__month=month,
+        publish_date__day=day,
         slug=slug,
     )
 
