@@ -10,12 +10,12 @@ class PostAdmin(admin.ModelAdmin):
         "title",
         "author",
         "status",
-        "publish_date",
+        "published_at",
         "created_at",
     ]
     list_filter = [
         "status",
-        "publish_date",
+        "published_at",
         "author__username",
     ]
     search_filter = [
@@ -24,20 +24,31 @@ class PostAdmin(admin.ModelAdmin):
         "author__username",
     ]
     prepopulated_fields = {"slug": ("title",)}
-    date_hierarchy = "publish_date"
-    ordering = ["status", "-publish_date", "-created_at"]
+    date_hierarchy = "published_at"
+    ordering = ["status", "-published_at", "-created_at"]
     # raw_id_fields = ["author"]
     autocomplete_fields = ["author"]
     show_facets = admin.ShowFacets.ALWAYS
+
+    fieldsets = (
+        (None, {"fields": ("title", "slug", "author", "content", "status")}),
+        (
+            "Timestamps",
+            {
+                "fields": ("published_at",),
+                "classes": ("collapse",),
+            },
+        ),
+    )
 
 
 class PostInline(admin.TabularInline):
     model = Post
     extra = 1
-    fields = ("title", "truncated_content", "status", "publish_date")
-    readonly_fields = ("publish_date", "truncated_content")
+    fields = ("title", "truncated_content", "status", "published_at")
+    readonly_fields = ("published_at", "truncated_content")
 
     def truncated_content(self, obj):
         return Truncator(obj.content).words(20, truncate="...")
-    
+
     truncated_content.short_description = "Content (truncated)"

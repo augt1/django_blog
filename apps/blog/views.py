@@ -5,7 +5,7 @@ from .models import Post
 
 def posts_list(request):
     posts = Post.published.all()
-    #TODO: add pagination, search, filters
+    # TODO: add pagination, search, filters
 
     return render(request, "blog/posts_list.html", {"posts": posts})
 
@@ -14,9 +14,9 @@ def post_detail(request, year, month, day, slug):
     post = get_object_or_404(
         Post,
         status=Post.Status.PUBLISHED,
-        publish_date__year=year,
-        publish_date__month=month,
-        publish_date__day=day,
+        published_at__year=year,
+        published_at__month=month,
+        published_at__day=day,
         slug=slug,
     )
 

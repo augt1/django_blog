@@ -17,7 +17,7 @@ class Post(models.Model):
 
     title = models.CharField(max_length=100)
     content = models.TextField()
-    publish_date = models.DateTimeField(blank=True, null=True, default=None)
+    published_at = models.DateTimeField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True, max_length=100)
@@ -43,11 +43,11 @@ class Post(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
 
-        if self.status == self.Status.PUBLISHED and not self.publish_date:
-            self.publish_date = timezone.now()
-        
+        if self.status == self.Status.PUBLISHED and not self.published_at:
+            self.published_at = timezone.now()
+
         if self.status == self.Status.DRAFT:
-            self.publish_date = None
+            self.published_at = None
 
         super().save(*args, **kwargs)
 
@@ -55,9 +55,9 @@ class Post(models.Model):
         return reverse(
             "blog:post_detail",
             kwargs={
-                "year": self.publish_date.year,
-                "month": self.publish_date.month,
-                "day": self.publish_date.day,
+                "year": self.published_at.year,
+                "month": self.published_at.month,
+                "day": self.published_at.day,
                 "slug": self.slug,
             },
         )
