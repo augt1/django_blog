@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
+from apps.blog.utils import post_image_upload_path
+
 from .managers import PublishedManager
 
 User = get_user_model()
@@ -25,7 +27,7 @@ class Post(models.Model):
         max_length=20, choices=Status.choices, default=Status.DRAFT
     )
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
-    # TODO: add image field, tags, categories, comments from users
+    image = models.ImageField(upload_to=post_image_upload_path, blank=True, null=True)
 
     def __str__(self):
         return self.title

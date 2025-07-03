@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.blog",
     "apps.users",
+    "easy_thumbnails",
 ]
 
 MIDDLEWARE = [
@@ -125,9 +126,35 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Meida files (User-uploaded files)
+MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = 'users.User'
+
+
+
+THUMBNAIL_ALIASES = {
+    '': {
+        'avatar': {
+            'size': (50, 50),
+            'crop': True,
+        },
+        'post_thumbnail': {
+            'size': (50, 50),  
+            'crop': True, 
+        },
+        'post_preview': {
+            'size': (200, 200),  
+            'crop': False,        
+        },
+    },
+}
+

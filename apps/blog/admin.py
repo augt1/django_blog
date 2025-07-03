@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.utils.text import Truncator
 
 from .models import Post
+from django.utils.html import format_html
+from easy_thumbnails.files import get_thumbnailer
+
 
 
 @admin.register(Post)
@@ -12,6 +15,7 @@ class PostAdmin(admin.ModelAdmin):
         "status",
         "published_at",
         "created_at",
+        "image_thumbnail",
     ]
     list_filter = [
         "status",
@@ -31,12 +35,13 @@ class PostAdmin(admin.ModelAdmin):
     show_facets = admin.ShowFacets.ALWAYS
 
     def get_readonly_fields(self, request, obj=None):
+        readonly_fields = ["image_preview",]
         if obj:  # editing form
-            return ["created_at", "updated_at"]
-        return []
+            return  readonly_fields + ["created_at", "updated_at"]
+        return readonly_fields
 
     def get_fieldsets(self, request, obj=None):
-        base_fields = ["title", "author", "content", "slug", "status"]
+        base_fields = ["title", "author", "content", "slug", "status", "image", "image_preview",]
             
         timestamp_fields = [ "published_at"]
 
@@ -49,6 +54,25 @@ class PostAdmin(admin.ModelAdmin):
         )
         
         return fieldsets
+    
+    def image_thumbnail(self, obj):
+        print("Thumbnail called for:", obj)
+        if obj.image:
+            image_url = get_thumbnailer(obj.image)['post_thumbnail'].url
+            return format_html('<img src="{}"/>', image_url)
+        
+        return "No image"
+    image_thumbnail.short_description = "Image"
+
+
+    def image_preview(self, obj):
+        if obj.image:
+            image_url = get_thumbnailer(obj.image)['post_preview'].url
+
+            return format_html('<img src="{}"/>', image_url)
+        return "No image uploaded"
+
+    image_preview.short_description = "Image Preview"
 
 
 class PostInline(admin.TabularInline):

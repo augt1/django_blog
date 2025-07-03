@@ -2,3 +2,5 @@ asgiref==3.8.1
 Django==5.2.3
 sqlparse==0.5.3
 python-decouple==3.8
+easy-thumbnails==2.10
+Pillow==11.3.0
