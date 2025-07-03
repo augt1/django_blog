@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.text import Truncator
 
 from .models import Post
 
@@ -30,4 +31,13 @@ class PostAdmin(admin.ModelAdmin):
     show_facets = admin.ShowFacets.ALWAYS
 
 
+class PostInline(admin.TabularInline):
+    model = Post
+    extra = 1
+    fields = ("title", "truncated_content", "status", "publish_date")
+    readonly_fields = ("publish_date", "truncated_content")
 
+    def truncated_content(self, obj):
+        return Truncator(obj.content).words(20, truncate="...")
+    
+    truncated_content.short_description = "Content (truncated)"
