@@ -3,7 +3,12 @@
 
 
     {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>    
+    <a hx-get="{% url 'blog:post_list_partial' %}?page={{ page_obj.previous_page_number }}"
+      hx-target=".post-list"
+      hx-swap="innerHTML"
+            hx-push-url="?page={{ page_obj.previous_page_number }}">
+      <span class="previous">Previous</span>
+    </a>    
     {% endif %}
     
     
@@ -11,12 +16,21 @@
     {% if page_obj.number == num %}
     <span class="current">{{ num }}</span>
     {% else %}
-    <a href="?page={{ num }}">{{ num }}</a>
+    <a hx-get="{% url 'blog:post_list_partial' %}?page={{ num }}"
+      hx-target=".post-list"
+      hx-swap="innerHTML"
+      hx-push-url="?page={{ num }}">
+    {{ num }}</a>
     {% endif %}
     {% endfor %}
     
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+    <a hx-get="{% url 'blog:post_list_partial' %}?page={{ page_obj.next_page_number }}"
+      hx-target=".post-list"
+      hx-swap="innerHTML"
+      hx-push-url="?page={{ page_obj.next_page_number }}">
+    <span class="next">Next</span>
+    </a>
     {% endif %}
     
   </span>
