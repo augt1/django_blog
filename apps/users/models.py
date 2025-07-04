@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
-from apps.corre.validators import validate_image_size
+from apps.core.validators import validate_image_size
 from apps.users.utils import user_avatar_upload_path
 
 

@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from apps.blog.utils import post_image_upload_path
-from apps.corre.validators import validate_image_size
+from apps.core.validators import validate_image_size
 
 from .managers import PublishedManager
 

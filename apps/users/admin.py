@@ -28,7 +28,6 @@ class UserAdmin(admin.ModelAdmin):
 
 
     def avatar(self, obj):
-        print("Thumbnail called for:", obj)
         if obj.image:
             image_url = get_thumbnailer(obj.image)['avatar'].url
             return format_html('<img src="{}"/>', image_url)

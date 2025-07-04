@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 from decouple import config
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "apps.blog",
+    "apps.core",
     "apps.users",
     "easy_thumbnails",
 ]
@@ -131,30 +132,27 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = 'users.User'
-
+AUTH_USER_MODEL = "users.User"
 
 
 THUMBNAIL_ALIASES = {
-    '': {
-        'avatar': {
-            'size': (50, 50),
-            'crop': True,
+    "": {
+        "avatar": {
+            "size": (50, 50),
+            "crop": True,
         },
-        'post_thumbnail': {
-            'size': (50, 50),  
-            'crop': True, 
+        "post_thumbnail": {
+            "size": (50, 50),
+            "crop": True,
         },
-        'post_preview': {
-            'size': (200, 200),  
-            'crop': False,        
+        "post_preview": {
+            "size": (200, 200),
+            "crop": False,
         },
     },
 }
-
