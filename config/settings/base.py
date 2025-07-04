@@ -126,7 +126,6 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"),]
-print(f"STATICFILES_DIRS: {STATICFILES_DIRS}")
 
 # Meida files (User-uploaded files)
 MEDIA_URL = "media/"

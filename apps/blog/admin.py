@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.utils.text import Truncator
 from easy_thumbnails.files import get_thumbnailer
 
-from apps.blog.models import Post
+from apps.blog.models import Post, Tag
 
 
 @admin.action(description="Publish selected posts")
@@ -34,7 +34,9 @@ class PostAdmin(admin.ModelAdmin):
         "published_at",
         "created_at",
         "image_thumbnail",
+        "tags_list",
     ]
+
     list_filter = [
         "status",
         "published_at",
@@ -49,7 +51,7 @@ class PostAdmin(admin.ModelAdmin):
     date_hierarchy = "published_at"
     ordering = ["status", "-published_at", "-created_at"]
     # raw_id_fields = ["author"]
-    autocomplete_fields = ["author"]
+    autocomplete_fields = ["author", "tags"]
     show_facets = admin.ShowFacets.ALWAYS
     actions = [
         post_update_status_published_action,
@@ -59,10 +61,9 @@ class PostAdmin(admin.ModelAdmin):
 
     class Media:
         js = [
-            "https://cdn.tiny.cloud/1/1acr1awsu4kzcz8efm1e45ma95nlrpqwbspquyy9e8tev24a/tinymce/7/tinymce.min.js", 
+            "https://cdn.tiny.cloud/1/1acr1awsu4kzcz8efm1e45ma95nlrpqwbspquyy9e8tev24a/tinymce/7/tinymce.min.js",
             "js/tinymce_init.js",
-              ]
-
+        ]
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = [
@@ -77,6 +78,7 @@ class PostAdmin(admin.ModelAdmin):
             "title",
             "author",
             "content",
+            "tags",
             "slug",
             "status",
             "image",
@@ -114,6 +116,10 @@ class PostAdmin(admin.ModelAdmin):
 
     image_preview.short_description = "Image Preview"
 
+    def tags_list(self, obj):
+        return ', '.join([tag.name for tag in obj.tags.all()])
+    tags_list.short_description = 'Tags'
+
 
 class PostInline(admin.TabularInline):
     model = Post
@@ -125,3 +131,12 @@ class PostInline(admin.TabularInline):
         return Truncator(obj.content).words(20, truncate="...")
 
     truncated_content.short_description = "Content (truncated)"
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug"]
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = [
+        "name",
+    ]

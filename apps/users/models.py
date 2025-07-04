@@ -20,7 +20,7 @@ class User(AbstractUser):
         help_text="Upload a profile picture (optional).",
         validators=[
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "gif"]),
-            lambda image: validate_image_size(image, max_mb=2),
+            validate_image_size,
         ],
     )
     bio = models.TextField(

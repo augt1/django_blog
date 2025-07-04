@@ -35,9 +35,10 @@ class Post(models.Model):
         null=True,
         validators=[
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "gif"]),
-            lambda image: validate_image_size(image, max_mb=2),
+            validate_image_size,
         ],
     )
+    tags = models.ManyToManyField("Tag", blank=True, related_name="posts")
 
     def __str__(self):
         return self.title
@@ -73,3 +74,25 @@ class Post(models.Model):
                 "slug": self.slug,
             },
         )
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(unique=True, max_length=50)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Tag"
+        verbose_name_plural = "Tags"
+        ordering = ["name"]
+
+    def save(self):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save()
+    
+    def get_absolute_url(self):
+        return reverse("blog:tag_detail", kwargs={"slug": self.slug})
+    
