@@ -1,10 +1,28 @@
 from django.contrib import admin
-from django.utils.text import Truncator
-
-from .models import Post
+from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.text import Truncator
 from easy_thumbnails.files import get_thumbnailer
 
+from apps.blog.models import Post
+
+
+@admin.action(description="Publish selected posts")
+def post_update_status_published_action(modeladmin, request, queryset):
+    queryset.update(status=Post.Status.PUBLISHED)
+    queryset.update(published_at=timezone.now())
+
+
+@admin.action(description="Unpublish selected posts")
+def post_update_status_draft_action(modeladmin, request, queryset):
+    queryset.update(status=Post.Status.DRAFT)
+    queryset.update(published_at=None)
+
+
+@admin.action(description="Archive selected posts")
+def post_update_status_archive_action(modeladmin, request, queryset):
+    queryset.update(status=Post.Status.ARCHIVED)
+    queryset.update(published_at=None)
 
 
 @admin.register(Post)
@@ -33,41 +51,56 @@ class PostAdmin(admin.ModelAdmin):
     # raw_id_fields = ["author"]
     autocomplete_fields = ["author"]
     show_facets = admin.ShowFacets.ALWAYS
+    actions = [
+        post_update_status_published_action,
+        post_update_status_draft_action,
+        post_update_status_archive_action,
+    ]
 
     def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ["image_preview",]
+        readonly_fields = [
+            "image_preview",
+        ]
         if obj:  # editing form
-            return  readonly_fields + ["created_at", "updated_at"]
+            return readonly_fields + ["created_at", "updated_at"]
         return readonly_fields
 
     def get_fieldsets(self, request, obj=None):
-        base_fields = ["title", "author", "content", "slug", "status", "image", "image_preview",]
-            
-        timestamp_fields = [ "published_at"]
+        base_fields = [
+            "title",
+            "author",
+            "content",
+            "slug",
+            "status",
+            "image",
+            "image_preview",
+        ]
+
+        timestamp_fields = ["published_at"]
 
         if obj:  # editing form
-            timestamp_fields += ['created_at', 'updated_at']
+            timestamp_fields += ["created_at", "updated_at"]
 
         fieldsets = (
             (None, {"fields": base_fields}),
             ("Timestamps", {"fields": timestamp_fields, "classes": ["collapse"]}),
         )
-        
+
         return fieldsets
-    
+
     def image_thumbnail(self, obj):
         print("Thumbnail called for:", obj)
         if obj.image:
-            image_url = get_thumbnailer(obj.image)['post_thumbnail'].url
+            image_url = get_thumbnailer(obj.image)["post_thumbnail"].url
             return format_html('<img src="{}"/>', image_url)
-        
-        return "No image"
-    image_thumbnail.short_description = "Image"
 
+        return "No image"
+
+    image_thumbnail.short_description = "Image"
 
     def image_preview(self, obj):
         if obj.image:
-            image_url = get_thumbnailer(obj.image)['post_preview'].url
+            image_url = get_thumbnailer(obj.image)["post_preview"].url
 
             return format_html('<img src="{}"/>', image_url)
         return "No image uploaded"
