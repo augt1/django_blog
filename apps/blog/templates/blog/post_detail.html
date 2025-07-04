@@ -9,7 +9,7 @@
   <h1>{{ post.title }}</h1>
   <p>Published on: {{ post.published_at }} by {{ post.author }}</p>
   <div class="post-content">
-    {{ post.content|linebreaks }}
+    {{ post.content|safe|linebreaks }}
   </div>
   <a href="{% url 'blog:posts_list' %}">Back to posts</a>
 {% endblock %}

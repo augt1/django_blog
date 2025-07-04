@@ -67,9 +67,9 @@ class Post(models.Model):
         return reverse(
             "blog:post_detail",
             kwargs={
-                "year": self.published_at.year,
-                "month": self.published_at.month,
-                "day": self.published_at.day,
+                "year": self.published_at.year if self.status == self.Status.PUBLISHED else self.created_at.year,
+                "month": self.published_at.month if self.status == self.Status.PUBLISHED else self.created_at.month,
+                "day": self.published_at.day if self.status == self.Status.PUBLISHED else self.created_at.day,
                 "slug": self.slug,
             },
         )

@@ -57,6 +57,13 @@ class PostAdmin(admin.ModelAdmin):
         post_update_status_archive_action,
     ]
 
+    class Media:
+        js = [
+            "https://cdn.tiny.cloud/1/1acr1awsu4kzcz8efm1e45ma95nlrpqwbspquyy9e8tev24a/tinymce/7/tinymce.min.js", 
+            "js/tinymce_init.js",
+              ]
+
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = [
             "image_preview",

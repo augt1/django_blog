@@ -19,7 +19,6 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 APPS_DIR = os.path.join(BASE_DIR, "apps")
-print(f"APPS_DIR: {APPS_DIR}")
 
 
 # Quick-start development settings - unsuitable for production
@@ -126,6 +125,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"),]
+print(f"STATICFILES_DIRS: {STATICFILES_DIRS}")
 
 # Meida files (User-uploaded files)
 MEDIA_URL = "media/"

@@ -7,3 +7,5 @@ media/
 .env
 
 db.sqlite3
+
+TODO.md 
