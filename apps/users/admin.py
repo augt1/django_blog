@@ -13,7 +13,7 @@ User = get_user_model()
 class UserAdmin(admin.ModelAdmin):
 
     #TODO: make the username clickable and not the first column
-    list_display = ["avatar", "username", "email", "is_staff", 'is_active',"total_posts"]
+    list_display = ["username", "email", "is_staff", 'is_active',"total_posts", "avatar", ]
     list_filter = ["is_staff", "is_active"]
     search_fields = ["username", "email"]
     ordering = ["username"]

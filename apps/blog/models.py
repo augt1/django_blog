@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
 from apps.blog.utils import post_image_upload_path
+from apps.corre.validators import validate_image_size
 
 from .managers import PublishedManager
 
@@ -27,7 +29,15 @@ class Post(models.Model):
         max_length=20, choices=Status.choices, default=Status.DRAFT
     )
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
-    image = models.ImageField(upload_to=post_image_upload_path, blank=True, null=True)
+    image = models.ImageField(
+        upload_to=post_image_upload_path,
+        blank=True,
+        null=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "gif"]),
+            lambda image: validate_image_size(image, max_mb=2),
+        ],
+    )
 
     def __str__(self):
         return self.title
