@@ -1,20 +1,68 @@
 {% extends "base.html" %}
 
+{% load static %}
+{% load thumbnail %}
+
 {% block title %}List of posts{% endblock title %}
 
 {% block content %}
 
 <h1>List of posts</h1>
 
-{% for post in posts %}
-  <div class="post">
-    <h2>
-      <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
-    </h2>
-    <p>Published on {{ post.published_at }} by {{ post.author }}</p>
-    <p>{{ post.content|safe|truncatewords:50 }}</p>
-  </div>
-{% endfor %}
+<div class="post-list">
+
+  {% if not posts %}
+    <p>No published posts available.</p>
+  {% else %}
   
+    {% for post in posts %}
+    <div class="post">
+      <h2 class="post-title">
+        <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+      </h2>
+      <div class="post-meta">
+
+        <p>Published on {{ post.published_at }} by {{ post.author }}</p>
+      </div>
+      <div class="post-body">
+        <div class="post-content">
+          <div class="post-excerpt">{{ post.content|safe|truncatewords:50 }}</div>
+          <div class="post-tags">
+              {% if post.tags %}
+                {% for tag in post.tags.all %}
+                <span class="tag">
+                  <a href="###">{{ tag.name }}</a>
+                </span>
+                {% endfor %}
+              {% endif %}
+
+          </div>
+
+        </div>
+        
+        {% if post.image %}
+          <div class="post-image">
+            <img src="{% thumbnail post.image 'post_preview' %}" alt="{{ post.title }}">
+          </div>
+        {% else %}
+          <p>No image available for this post.</p>
+        {% endif %}
+          
+      </div>
+      
+          
+    </div>
+    {% endfor %}
+        
+        {% include 'pagination.html' with page_obj=posts %}
+  {% endif %}
+    </div>
+
 {% endblock content %}
+
+
+{% block extra_headers %}
+  <link rel="stylesheet" href="{% static 'css/posts_list.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pagination.css' %}">
+{% endblock extra_headers %}
 

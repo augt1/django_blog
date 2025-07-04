@@ -1,9 +1,15 @@
 <!DOCTYPE html>
+
+{% load static %}
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{% endblock title %}</title>
+
+  <link rel="stylesheet" href="{% static 'css/base-style.css' %}">
+  {% block extra_headers %}{% endblock extra_headers %}
 </head>
 <body>
   <div class="content">
@@ -13,6 +19,8 @@
     {% endblock content %}
       
   </div>
+
+  {% block extra_scripts %}{% endblock extra_scripts %}
   
 </body>
 </html>

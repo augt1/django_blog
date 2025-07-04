@@ -1,13 +1,14 @@
 from django.shortcuts import get_object_or_404, render
-
+from django.core.paginator import Paginator
 from .models import Post
 
 
 def posts_list(request):
-    posts = Post.published.all()
+    published_posts = Post.published.prefetch_related("tags").all()
 
-    print(posts)
-    # TODO: add pagination, search, filters
+    paginator = Paginator(published_posts, 2)
+    page_number = request.GET.get("page")
+    posts = paginator.get_page(page_number)
 
     return render(request, "blog/posts_list.html", {"posts": posts})
 
