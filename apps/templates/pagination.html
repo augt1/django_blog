@@ -3,10 +3,10 @@
 
 
     {% if page_obj.has_previous %}
-    <a hx-get="{% url 'blog:post_list_partial' %}?page={{ page_obj.previous_page_number }}"
+    <a hx-get="{% querystring page=page_obj.previous_page_number %}"
       hx-target=".post-list"
       hx-swap="innerHTML"
-            hx-push-url="?page={{ page_obj.previous_page_number }}">
+            hx-push-url="true">
       <span class="previous">Previous</span>
     </a>    
     {% endif %}
@@ -16,19 +16,19 @@
     {% if page_obj.number == num %}
     <span class="current">{{ num }}</span>
     {% else %}
-    <a hx-get="{% url 'blog:post_list_partial' %}?page={{ num }}"
+    <a hx-get="{% querystring page=num %}"
       hx-target=".post-list"
       hx-swap="innerHTML"
-      hx-push-url="?page={{ num }}">
+      hx-push-url="true">
     {{ num }}</a>
     {% endif %}
     {% endfor %}
     
     {% if page_obj.has_next %}
-    <a hx-get="{% url 'blog:post_list_partial' %}?page={{ page_obj.next_page_number }}"
+    <a hx-get="{% querystring page=page_obj.next_page_number %}"
       hx-target=".post-list"
       hx-swap="innerHTML"
-      hx-push-url="?page={{ page_obj.next_page_number }}">
+      hx-push-url="true">
     <span class="next">Next</span>
     </a>
     {% endif %}
