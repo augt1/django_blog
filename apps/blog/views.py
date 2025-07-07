@@ -33,7 +33,7 @@ def posts_list(request):
     if tags_query:
         published_posts = published_posts.filter(tags__in=tags_query).distinct()
 
-    paginator = Paginator(published_posts, 2)
+    paginator = Paginator(published_posts, 5)
     page_number = request.GET.get("page")
     posts = paginator.get_page(page_number)
 

@@ -1,3 +1,5 @@
 -r requirements.txt
 
 django-debug-toolbar==5.2.0
+Faker==37.4.0 
+factory_boy==3.3.3
