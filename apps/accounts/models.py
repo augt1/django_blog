@@ -4,7 +4,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 
 from apps.core.validators import validate_image_size
-from apps.users.utils import user_avatar_upload_path
+from apps.accounts.utils import user_avatar_upload_path
 
 
 class User(AbstractUser):

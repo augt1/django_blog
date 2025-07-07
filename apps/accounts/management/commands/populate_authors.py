@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from apps.users.factories import UserAuthorFactory
+from apps.accounts.factories import UserAuthorFactory
 
 
 class Command(BaseCommand):
