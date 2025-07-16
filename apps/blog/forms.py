@@ -35,3 +35,45 @@ class FilterForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"}),
         label="Published To",
     )
+
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = [
+            "title",
+            "content",
+            "status",
+            "slug",
+            "author",
+            "editors",
+            "image",
+            "published_at",
+            "tags",
+        ]
+        widgets = {
+            "title": forms.TextInput(),
+            "content": forms.Textarea(),
+            "author": forms.Select(),
+            "slug": forms.TextInput(),
+            "published_at": forms.DateTimeInput(),
+            "status": forms.Select(),
+            "tags": forms.SelectMultiple(),
+            "editors": forms.SelectMultiple(),
+        }
+    
+
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        if self.instance and self.user:
+            is_author = self.user == self.instance.author
+            is_editor = self.user in self.instance.editors.all()
+
+        if is_editor and not is_author:
+            readonly_fields = ["author", "editors", "published_at"]
+            for field in readonly_fields:
+                if field in self.fields:
+                    self.fields[field].disabled = True

@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.blog.forms import FilterForm
+from apps.blog.forms import FilterForm, PostForm
 
 from .models import Post
 
@@ -78,3 +78,21 @@ def post_detail(request, year, month, day, slug):
     )
 
     return render(request, "blog/post_detail.html", {"post": post})
+
+
+def edit_post_view(request, slug):
+    post = get_object_or_404(Post, slug=slug)
+
+    if request.method == "POST":
+        form = PostForm(request.POST, instance=post, user=request.user)
+
+        if form.is_valid():
+            post = form.save()
+            return redirect(post.get_absolute_url())
+
+        print("LLL")
+    else:
+        form = PostForm(instance=post, user=request.user)
+    
+    return render(request, "blog/edit_post_form.html", {"form": form, "post": post})
+

@@ -58,6 +58,9 @@ class UserAdmin(admin.ModelAdmin):
         return request.user.is_staff
 
     def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        
         is_author = request.user.groups.filter(name="Authors").exists()
         return request.user.is_staff and is_author
 

@@ -27,6 +27,8 @@
       <ul>
         
         {% if user.is_authenticated %}
+
+        Hello, {{ user }}
         
         {% if user.is_staff %}
           <li><a href="{% url 'admin:index' %}">Admin</a></li>
