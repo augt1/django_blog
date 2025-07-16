@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 User = get_user_model()
 
@@ -16,6 +17,11 @@ class LoginForm(forms.Form):
 
 
 class UserRegistrationForm(forms.ModelForm):
+    ROLE_CHOICES = [
+        ("author", "Author"),
+        ("editor", "Editor"),
+    ]
+
     email = forms.EmailField(
         label="Email",
         widget=forms.EmailInput(attrs={"placeholder": "Enter your email"}),
@@ -27,6 +33,12 @@ class UserRegistrationForm(forms.ModelForm):
     password2 = forms.CharField(
         label="Confirm Password",
         widget=forms.PasswordInput(attrs={"placeholder": "Confirm your password"}),
+    )
+
+    role = forms.ChoiceField(
+        label="Register as",
+        choices=ROLE_CHOICES,
+        widget=forms.Select(attrs={"placeholder": "Select your role"}),
     )
 
     class Meta:
@@ -47,3 +59,16 @@ class UserRegistrationForm(forms.ModelForm):
         if password != password2:
             raise forms.ValidationError("Passwords are not the same")
         return password2
+
+    def save(self, commit=True):
+        new_user = super().save(commit=False)
+        new_user.username = self.cleaned_data.get("email").split("@")[0]
+        new_user.is_staff = True
+        new_user.set_password(self.cleaned_data.get("password"))
+
+        if commit:
+            new_user.save()
+
+        role = self.cleaned_data.get("role").title() + "s"
+        group = Group.objects.get(name=role)
+        new_user.groups.add(group)
