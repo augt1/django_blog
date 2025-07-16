@@ -108,6 +108,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "apps.accounts.authentication.CustomEmailAuthenticationBackend",
+]
+
+
+LOGIN_REDIRECT_URL = "blog:posts_list"
+LOGIN_URL = "accounts:login"
+LOGOUT_REDIRECT_URL = "blog:posts_list"
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -158,3 +167,6 @@ THUMBNAIL_ALIASES = {
         },
     },
 }
+
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

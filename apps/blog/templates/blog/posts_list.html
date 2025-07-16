@@ -9,39 +9,47 @@
 
 <h1>List of posts</h1>
 
-<div class="search-form">
-  <form id="search-form">
-  <input type="text" name="search" placeholder="Search posts..."
-   hx-get="{% url 'blog:posts_list' %}" 
-    hx-trigger="keyup changed delay:300ms"
-    hx-target=".post-list" 
-    hx-swap="innerHTML"
-    hx-push-url="true">
-  </form>
-</div>
+<div class="container">
 
-<div class="filters">
-  <h2>Filters</h2>
-  <form id="filters-form">
-
-    {{ filter_form.as_p}}
-
-
-<button type="submit"
-        hx-get="{% url 'blog:posts_list' %}"
-        hx-target=".post-list"
-        hx-swap="innerHTML"
-        hx-push-url="true"
-        hx-include="#filters-form">
-  Filter
-</button>      
-  </form>
+  <div class="main-content">
   
-</div>
-
-
-<div class="post-list">
-  {% include 'blog/partials/post_list_partial.html' %}
+    <div class="search-form">
+      <form id="search-form">
+      <input type="text" name="search" placeholder="Search posts..."
+       hx-get="{% url 'blog:posts_list' %}" 
+        hx-trigger="keyup changed delay:300ms"
+        hx-target=".post-list" 
+        hx-swap="innerHTML"
+        hx-push-url="true">
+      </form>
+    </div>
+    
+    
+    <div class="post-list">
+      {% include 'blog/partials/post_list_partial.html' %}
+    </div>
+  </div>
+  
+  
+  <div class="sidebar">
+    <div class="filters">
+    <h2>Filters</h2>
+    <form id="filters-form">
+  
+      {{ filter_form.as_p}}
+  
+    <button type="submit"
+            hx-get="{% url 'blog:posts_list' %}"
+            hx-target=".post-list"
+            hx-swap="innerHTML"
+            hx-push-url="true"
+            hx-include="#filters-form">
+      Filter
+    </button>      
+      </form>
+      
+    </div>
+  </div>
 </div>
 
 {% endblock content %}
@@ -53,7 +61,8 @@
 {% endblock extra_headers %}
 
 {% block extra_scripts %}
-{% comment %} <script>
+
+<script>
     function initSelect2() {
       $('.select2').select2();
     }
@@ -61,27 +70,7 @@
     // Initialize Select2 on page load
     document.addEventListener('DOMContentLoaded', initSelect2);
 
-
-    // Re-initialize after HTMX swaps content
-    document.body.addEventListener('htmx:afterSwap', initSelect2);
-
-  </script>
- {% endcomment %}
-
-<script>
-function initSelect2WithHTMX() {
-  $('.select2').select2();
-
-  $('.select2').on('select2:select select2:unselect', function () {
-    // Trigger change on the parent form to trigger HTMX
-    const form = this.closest('form');
-    if (form) {
-      form.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  });
-}
-
-document.addEventListener('DOMContentLoaded', initSelect2WithHTMX);
-document.body.addEventListener('htmx:afterSwap', initSelect2WithHTMX);
 </script>
+
+
 {% endblock extra_scripts %}

@@ -1,3 +1,16 @@
+.container {
+  display: flex;
+}
+
+.main-content {
+  flex: 3;
+  margin: 20px;
+}
+
+.sidebar {
+  flex: 1;
+}
+
 .post {
   margin: 50px 0;
   padding: 20px;
@@ -63,13 +76,13 @@
 }
 
 .tag {
-    display: inline-block;
-    padding: 5px 10px;
-    margin: 5px;
-    background-color: #e7e7e7;
-    border-radius: 5px;
-    font-size: 14px;
-    color: #333;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 5px;
+  background-color: #e7e7e7;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
 }

@@ -3,15 +3,15 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
-from apps.core.validators import validate_image_size
 from apps.accounts.utils import user_avatar_upload_path
+from apps.core.validators import validate_image_size
 
 
 class User(AbstractUser):
     """
     Custom user model that extends the default Django user model.
     """
-
+    
     image = models.ImageField(
         upload_to=user_avatar_upload_path,
         blank=True,

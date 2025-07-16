@@ -12,8 +12,7 @@ User = get_user_model()
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
 
-    #TODO: make the username clickable and not the first column
-    list_display = ["username", "email", "is_staff", 'is_active',"total_posts", "avatar", ]
+    list_display = ["username", "email", "is_staff", 'is_active',"total_posts", "avatar"]
     list_filter = ["is_staff", "is_active"]
     search_fields = ["username", "email"]
     ordering = ["username"]
@@ -26,7 +25,6 @@ class UserAdmin(admin.ModelAdmin):
 
     readonly_fields = ["avatar_preview"]
 
-
     def avatar(self, obj):
         if obj.image:
             image_url = get_thumbnailer(obj.image)['avatar'].url
@@ -34,7 +32,6 @@ class UserAdmin(admin.ModelAdmin):
         
         return "No image"
     avatar.short_description = "Avatar"
-
 
     def avatar_preview(self, obj):
         if obj.image:

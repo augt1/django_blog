@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Register user{% endblock %}
+{% block content %}
+
+  <h1>Register a new User</h1>
+  <p>Please, sign up using the following form:</p>
+  <form method="post" novalidate>
+    {{ form.non_field_errors }}
+
+    
+    {% for field in form %}
+    <div>
+
+      {{ field.as_field_group }}
+    </div>
+      
+    {% endfor %}
+      
+   
+    {% csrf_token %}
+    <p><input type="submit" value="Sign Up"></p>
+    <a href="{% url 'blog:posts_list' %}" >Back</a>
+  </form>
+
+
+{% endblock %}
