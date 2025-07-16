@@ -36,12 +36,6 @@ class PostAdmin(admin.ModelAdmin):
         "image_thumbnail",
         "tags_list",
     ]
-
-    list_filter = [
-        "status",
-        "published_at",
-        "author__username",
-    ]
     search_filter = [
         "title",
         "content",
@@ -65,18 +59,66 @@ class PostAdmin(admin.ModelAdmin):
             "js/tinymce_init.js",
         ]
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(author=request.user)
+
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+
+        return request.user == obj.author or request.user
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        return request.user == obj.author or request.user
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return False
+        return request.user == obj.author
+
+    def save_model(self, request, obj, form, change):
+        if not change or not obj.author:
+            obj.author = request.user
+        super().save_model(request, obj, form, change)
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = [
             "image_preview",
         ]
+
         if obj:  # editing form
             return readonly_fields + ["created_at", "updated_at"]
+
+        if not request.user.is_superuser:
+            readonly_fields.append("author")
+
         return readonly_fields
+
+    def get_list_filter(self, request):
+        list_filter = [
+            "status",
+            "published_at",
+        ]
+
+        if request.user.is_superuser:
+            list_filter.append("author__username")
+        return list_filter
 
     def get_fieldsets(self, request, obj=None):
         base_fields = [
             "title",
-            "author",
             "content",
             "tags",
             "slug",
@@ -84,6 +126,9 @@ class PostAdmin(admin.ModelAdmin):
             "image",
             "image_preview",
         ]
+
+        if request.user.is_superuser:
+            base_fields.insert(1, "author")
 
         timestamp_fields = ["published_at"]
 
@@ -117,8 +162,9 @@ class PostAdmin(admin.ModelAdmin):
     image_preview.short_description = "Image Preview"
 
     def tags_list(self, obj):
-        return ', '.join([tag.name for tag in obj.tags.all()])
-    tags_list.short_description = 'Tags'
+        return ", ".join([tag.name for tag in obj.tags.all()])
+
+    tags_list.short_description = "Tags"
 
 
 class PostInline(admin.TabularInline):
