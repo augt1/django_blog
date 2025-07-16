@@ -39,6 +39,7 @@ class Post(models.Model):
         ],
     )
     tags = models.ManyToManyField("Tag", blank=True, related_name="posts")
+    editors = models.ManyToManyField(User, blank=True, related_name="editable_posts")
 
     def __str__(self):
         return self.title
@@ -68,9 +69,21 @@ class Post(models.Model):
         return reverse(
             "blog:post_detail",
             kwargs={
-                "year": self.published_at.year if self.status == self.Status.PUBLISHED else self.created_at.year,
-                "month": self.published_at.month if self.status == self.Status.PUBLISHED else self.created_at.month,
-                "day": self.published_at.day if self.status == self.Status.PUBLISHED else self.created_at.day,
+                "year": (
+                    self.published_at.year
+                    if self.status == self.Status.PUBLISHED
+                    else self.created_at.year
+                ),
+                "month": (
+                    self.published_at.month
+                    if self.status == self.Status.PUBLISHED
+                    else self.created_at.month
+                ),
+                "day": (
+                    self.published_at.day
+                    if self.status == self.Status.PUBLISHED
+                    else self.created_at.day
+                ),
                 "slug": self.slug,
             },
         )
@@ -92,7 +105,6 @@ class Tag(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save()
-    
+
     def get_absolute_url(self):
         return reverse("blog:tag_detail", kwargs={"slug": self.slug})
-    

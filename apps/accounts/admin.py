@@ -1,10 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.utils.html import format_html
+from easy_thumbnails.files import get_thumbnailer
 
 from apps.blog.admin import PostInline
-from easy_thumbnails.files import get_thumbnailer
-from django.utils.html import format_html
-
 
 User = get_user_model()
 
@@ -12,7 +11,14 @@ User = get_user_model()
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
 
-    list_display = ["username", "email", "is_staff", 'is_active',"total_posts", "avatar"]
+    list_display = [
+        "username",
+        "email",
+        "is_staff",
+        "is_active",
+        "total_posts",
+        "avatar",
+    ]
     list_filter = ["is_staff", "is_active"]
     search_fields = ["username", "email"]
     ordering = ["username"]
@@ -25,17 +31,24 @@ class UserAdmin(admin.ModelAdmin):
 
     readonly_fields = ["avatar_preview"]
 
+    @admin.display(description="Avatar")
     def avatar(self, obj):
         if obj.image:
-            image_url = get_thumbnailer(obj.image)['avatar'].url
+            image_url = get_thumbnailer(obj.image)["avatar"].url
             return format_html('<img src="{}"/>', image_url)
-        
-        return "No image"
-    avatar.short_description = "Avatar"
 
+        return "No image"
+
+    @admin.display(description="Avatar Preview")
     def avatar_preview(self, obj):
         if obj.image:
-            image_url = get_thumbnailer(obj.image)['avatar'].url
+            image_url = get_thumbnailer(obj.image)["avatar"].url
             return format_html('<img src="{}" />', image_url)
         return "No avatar uploaded"
-    avatar_preview.short_description = "Avatar Preview"
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_staff
+    

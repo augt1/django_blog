@@ -1,10 +1,14 @@
 from django.contrib import admin
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.text import Truncator
 from easy_thumbnails.files import get_thumbnailer
+from django.contrib.auth import get_user_model
 
 from apps.blog.models import Post, Tag
+
+User = get_user_model()
 
 
 @admin.action(description="Publish selected posts")
@@ -45,8 +49,7 @@ class PostAdmin(admin.ModelAdmin):
     date_hierarchy = "published_at"
     ordering = ["status", "-published_at", "-created_at"]
     # raw_id_fields = ["author"]
-    autocomplete_fields = ["author", "tags"]
-    show_facets = admin.ShowFacets.ALWAYS
+    autocomplete_fields = ["author", "tags", "editors"]
     actions = [
         post_update_status_published_action,
         post_update_status_draft_action,
@@ -64,7 +67,7 @@ class PostAdmin(admin.ModelAdmin):
 
         if request.user.is_superuser:
             return qs
-        return qs.filter(author=request.user)
+        return qs.filter(Q(author=request.user) | Q(editors=request.user))
 
     def has_view_permission(self, request, obj=None):
         if request.user.is_superuser:
@@ -72,14 +75,14 @@ class PostAdmin(admin.ModelAdmin):
         if obj is None:
             return True
 
-        return request.user == obj.author or request.user
+        return request.user == obj.author or request.user in obj.editors.all()
 
     def has_change_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
         if obj is None:
             return True
-        return request.user == obj.author or request.user
+        return request.user == obj.author or request.user in obj.editors.all()
 
     def has_delete_permission(self, request, obj=None):
         if request.user.is_superuser:
@@ -87,6 +90,9 @@ class PostAdmin(admin.ModelAdmin):
         if obj is None:
             return False
         return request.user == obj.author
+
+    def has_module_permission(self, request):
+        return request.user
 
     def save_model(self, request, obj, form, change):
         if not change or not obj.author:
@@ -99,12 +105,27 @@ class PostAdmin(admin.ModelAdmin):
         ]
 
         if obj:  # editing form
-            return readonly_fields + ["created_at", "updated_at"]
+            readonly_fields += ["created_at", "updated_at"]
+            
+
+            if request.user in obj.editors.all():
+                editable_fields = ["title", "content", "image", "tags", "slug"]
+                all_fields = self.get_fields(request)
+                readonly_fields = [
+                    f
+                    for f in all_fields
+                    if f not in editable_fields
+                ]
+                readonly_fields += [
+                    "image_preview",
+                    "created_at",
+                    "updated_at",
+                ]  # ensure these are always readonly
 
         if not request.user.is_superuser:
             readonly_fields.append("author")
-
-        return readonly_fields
+        
+        return list(set(readonly_fields))
 
     def get_list_filter(self, request):
         list_filter = [
@@ -121,6 +142,7 @@ class PostAdmin(admin.ModelAdmin):
             "title",
             "content",
             "tags",
+            "editors",
             "slug",
             "status",
             "image",
@@ -142,16 +164,15 @@ class PostAdmin(admin.ModelAdmin):
 
         return fieldsets
 
+    @admin.display(description="Image")
     def image_thumbnail(self, obj):
-        print("Thumbnail called for:", obj)
         if obj.image:
             image_url = get_thumbnailer(obj.image)["post_thumbnail"].url
             return format_html('<img src="{}"/>', image_url)
 
         return "No image"
 
-    image_thumbnail.short_description = "Image"
-
+    @admin.display(description="Image Preview")
     def image_preview(self, obj):
         if obj.image:
             image_url = get_thumbnailer(obj.image)["post_preview"].url
@@ -159,12 +180,9 @@ class PostAdmin(admin.ModelAdmin):
             return format_html('<img src="{}"/>', image_url)
         return "No image uploaded"
 
-    image_preview.short_description = "Image Preview"
-
+    @admin.display(description="Tags")
     def tags_list(self, obj):
         return ", ".join([tag.name for tag in obj.tags.all()])
-
-    tags_list.short_description = "Tags"
 
 
 class PostInline(admin.TabularInline):
@@ -173,10 +191,9 @@ class PostInline(admin.TabularInline):
     fields = ("title", "truncated_content", "status", "published_at")
     readonly_fields = ("published_at", "truncated_content")
 
+    @admin.display(description="Content (truncated)")
     def truncated_content(self, obj):
         return Truncator(obj.content).words(20, truncate="...")
-
-    truncated_content.short_description = "Content (truncated)"
 
 
 @admin.register(Tag)
@@ -186,3 +203,15 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_staff
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_add_permission(self, request):
+        return request.user.is_staff
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_staff
