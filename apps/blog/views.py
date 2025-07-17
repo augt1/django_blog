@@ -11,7 +11,7 @@ User = get_user_model()
 
 
 def posts_list(request):
-    published_posts = Post.published.prefetch_related("tags").all()
+    published_posts = Post.published.select_related("author").prefetch_related("tags", "editors").all()
 
     # handle filters
     search_query = request.GET.get("search", "")
@@ -50,23 +50,6 @@ def posts_list(request):
     return render(request, "blog/posts_list.html", context)
 
 
-# def post_list_partial(request):
-#     published_posts = Post.published.prefetch_related("tags").all()
-
-#     # handle filters
-#     search_query = request.GET.get("search", "")
-
-#     if search_query:
-#         published_posts = published_posts.filter(Q(title__icontains=search_query)|
-#                                                 Q(content__icontains=search_query))
-
-#     paginator = Paginator(published_posts, 2)
-#     page_number = request.GET.get("page")
-#     posts = paginator.get_page(page_number)
-
-#     return render(request, "blog/partials/post_list_partial.html", {"posts": posts})
-
-
 def post_detail(request, year, month, day, slug):
     post = get_object_or_404(
         Post,
@@ -81,7 +64,10 @@ def post_detail(request, year, month, day, slug):
 
 
 def edit_post_view(request, slug):
-    post = get_object_or_404(Post, slug=slug)
+    post = get_object_or_404(
+        Post.published.select_related("author").prefetch_related("tags", "editors"),
+        slug=slug,
+    )
 
     if request.method == "POST":
         form = PostForm(request.POST, instance=post, user=request.user)
@@ -93,6 +79,5 @@ def edit_post_view(request, slug):
         print("LLL")
     else:
         form = PostForm(instance=post, user=request.user)
-    
-    return render(request, "blog/edit_post_form.html", {"form": form, "post": post})
 
+    return render(request, "blog/edit_post_form.html", {"form": form, "post": post})
