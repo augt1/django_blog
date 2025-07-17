@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
-from apps.blog.models import Post, Tag
+from apps.blog.models import Comment, Post, Tag
 
 User = get_user_model()
 
@@ -79,3 +79,9 @@ class PostForm(forms.ModelForm):
                     self.fields[field].disabled = True
 
         self.fields['editors'].queryset = User.objects.filter(is_staff=True).exclude(id=self.instance.author_id)
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ["name", "content"]

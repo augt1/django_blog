@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.blog.forms import FilterForm, PostForm
+from apps.blog.forms import CommentForm, FilterForm, PostForm
 
 from .models import Post
 
@@ -51,8 +51,9 @@ def posts_list(request):
 
 
 def post_detail(request, year, month, day, slug):
+    qs = Post.published.select_related("author").prefetch_related("tags", "editors")
     post = get_object_or_404(
-        Post,
+        qs,
         status=Post.Status.PUBLISHED,
         published_at__year=year,
         published_at__month=month,
@@ -60,7 +61,9 @@ def post_detail(request, year, month, day, slug):
         slug=slug,
     )
 
-    return render(request, "blog/post_detail.html", {"post": post})
+    comments = post.comments.filter(active=True)
+
+    return render(request, "blog/post_detail.html", {"post": post, "comments": comments})
 
 
 def edit_post_view(request, slug):
@@ -76,8 +79,25 @@ def edit_post_view(request, slug):
             post = form.save()
             return redirect(post.get_absolute_url())
 
-        print("LLL")
     else:
         form = PostForm(instance=post, user=request.user)
 
     return render(request, "blog/edit_post_form.html", {"form": form, "post": post})
+
+
+def create_comment_view(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.save()
+
+            return render(request, "blog/partials/comment.html", {"comment": comment})
+    else:
+        form = CommentForm()
+
+    return render(request, "blog/partials/create_comment_form.html", {"form": form, "post": post})

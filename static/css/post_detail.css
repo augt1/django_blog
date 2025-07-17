@@ -36,3 +36,52 @@
   text-decoration: none;
   transition: background-color 0.3s ease;
 }
+
+.comments-container, .comments-list {
+  margin-top: 2rem;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.comment {
+  background-color: #f0f0f0;
+  width: 90%;
+  max-width: 600px;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+
+}
+
+.comment-content {
+  font-size: 1em;
+  background-color:white;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.comment-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.comment-footer h3, p {
+  margin:0;
+  font-size: 0.75em;
+}
+
+.comment-footer h3 {
+  font-weight: normal;
+  color: #333;
+}
+
+.comment-footer span {
+  font-weight: bold;
+}

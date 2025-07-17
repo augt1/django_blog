@@ -6,7 +6,7 @@ from django.utils.text import Truncator
 from easy_thumbnails.files import get_thumbnailer
 from django.contrib.auth import get_user_model
 
-from apps.blog.models import Post, Tag
+from apps.blog.models import Post, Tag, Comment
 
 User = get_user_model()
 
@@ -215,3 +215,11 @@ class TagAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return request.user.is_staff
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ["name", "post", "created_at", "active"]
+    search_fields = ["post__title", "name", "content"]
+    list_filter = ["active", "created_at"]
+    
