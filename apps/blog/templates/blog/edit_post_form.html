@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}Edit Post{% endblock title %}
 
 {% block content %}
@@ -18,3 +20,10 @@
 </form>
 
 {% endblock content %}
+
+
+{% block extra_scripts %}
+  <script src="{% static 'js/select2_init.js' %}"></script>
+  <script src="{% static 'js/tinymce_init.js' %}"></script>
+{% endblock extra_scripts %}
+

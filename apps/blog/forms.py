@@ -54,12 +54,12 @@ class PostForm(forms.ModelForm):
         widgets = {
             "title": forms.TextInput(),
             "content": forms.Textarea(),
-            "author": forms.Select(),
+            "author": forms.Select(attrs={"class": "select2"}),
             "slug": forms.TextInput(),
             "published_at": forms.DateTimeInput(),
             "status": forms.Select(),
-            "tags": forms.SelectMultiple(),
-            "editors": forms.SelectMultiple(),
+            "tags": forms.SelectMultiple(attrs={"class": "select2"}),
+            "editors": forms.SelectMultiple(attrs={"class": "select2"}),
         }
     
 
@@ -77,3 +77,5 @@ class PostForm(forms.ModelForm):
             for field in readonly_fields:
                 if field in self.fields:
                     self.fields[field].disabled = True
+
+        self.fields['editors'].queryset = User.objects.filter(is_staff=True).exclude(id=self.instance.author_id)
