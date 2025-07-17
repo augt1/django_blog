@@ -164,6 +164,10 @@ THUMBNAIL_ALIASES = {
         "post_preview": {
             "size": (200, 200),
             "crop": False,
+        }, 
+        "post_detail": {
+            "size": (250, 0),
+            "crop": False,
         },
     },
 }

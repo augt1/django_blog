@@ -1,0 +1,38 @@
+.post-meta {
+  font-size: 1em;
+  color: #7a7a7a;
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+
+.post-image {
+  justify-content: center;
+  display: flex;
+  align-items: center;
+}
+.post-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.post-tags {
+  margin: 5px;
+  font-size: 1.2em;
+}
+
+.post-tags a {
+  text-decoration: none;
+  color: #666;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 5px;
+  background-color: #e7e7e7;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
