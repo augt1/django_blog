@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from apps.blog.utils import post_image_upload_path
+from apps.core.utils import delete_image_and_thumbanails
 from apps.core.validators import validate_image_size
 
 from .managers import PublishedManager
@@ -54,6 +55,12 @@ class Post(models.Model):
     published = PublishedManager()
 
     def save(self, *args, **kwargs):
+        # Find is old image exists and is not the same as the new one
+        if self.pk:
+            old_image = Post.objects.get(pk=self.pk).image
+            if old_image and old_image != self.image:
+                delete_image_and_thumbanails(old_image)
+
         if not self.slug:
             self.slug = slugify(self.title)
 
@@ -64,6 +71,11 @@ class Post(models.Model):
             self.published_at = None
 
         super().save(*args, **kwargs)
+
+    def delete(self):
+        if self.image:
+            delete_image_and_thumbanails(self.image)
+        super().delete()
 
     def get_absolute_url(self):
         return reverse(
