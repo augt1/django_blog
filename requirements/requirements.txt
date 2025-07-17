@@ -4,3 +4,4 @@ sqlparse==0.5.3
 python-decouple==3.8
 easy-thumbnails==2.10
 Pillow==11.3.0
+psycopg==3.2.9
