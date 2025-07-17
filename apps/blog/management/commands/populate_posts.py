@@ -1,20 +1,19 @@
 from django.core.management.base import BaseCommand
 from apps.blog.factories import PostPublishedFactory
 
-
 class Command(BaseCommand):
-    help = 'Populate the database with posts'
+    help = "Populate the database with posts"
 
     def add_arguments(self, parser):
-        parser.add_argument('--number', type=int, default=20)
+        parser.add_argument(
+            '--number', '-n', type=int, default=10,
+            help='Number of posts to create (default: 10)'
+        )
 
     def handle(self, *args, **kwargs):
         number = kwargs['number']
+        self.stdout.write(f"Creating {number} posts...")
 
-        for _ in range(number):
-            post = PostPublishedFactory()
-            self.stdout.write(
-                self.style.SUCCESS(f'Post "{post.title}" created with author "{post.author.username}"')
-            )
+        posts = PostPublishedFactory.create_batch(number)
 
-
+        self.stdout.write(self.style.SUCCESS(f"Successfully created {len(posts)} posts."))

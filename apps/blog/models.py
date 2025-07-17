@@ -72,7 +72,7 @@ class Post(models.Model):
             self.published_at = None
 
         super().save(*args, **kwargs)
-        
+
         #TODO: add an async task to handle group assignments
         if self.author:
             authors_group, _ = Group.objects.get_or_create(name="Authors")
@@ -126,7 +126,7 @@ class Tag(models.Model):
         verbose_name_plural = "Tags"
         ordering = ["name"]
 
-    def save(self):
+    def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save()
