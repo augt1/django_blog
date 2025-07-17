@@ -1,0 +1,17 @@
+<div class="filters">
+  <h2>Filters</h2>
+  <form id="filters-form">
+
+    {{ filter_form.as_p}}
+
+    <button type="submit"
+            hx-get="{% url 'blog:posts_list' %}"
+            hx-target=".post-list"
+            hx-swap="innerHTML"
+            hx-push-url="true"
+            hx-include="#filters-form">
+      Filter
+    </button>      
+  </form>
+      
+</div>

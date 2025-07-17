@@ -5,18 +5,24 @@
 
 {% block title %}List of posts{% endblock title %}
 
+{% block extra_headers %}
+  <link rel="stylesheet" href="{% static 'css/posts_list.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pagination.css' %}">
+{% endblock extra_headers %}
+
 {% block content %}
 
 <h1>List of posts</h1>
 
 <div class="container">
 
-  <div class="main-content">
   
+  <div class="main-content">
+    
     <div class="search-form">
       <form id="search-form">
-      <input type="text" name="search" placeholder="Search posts..."
-       hx-get="{% url 'blog:posts_list' %}" 
+        <input type="text" name="search" placeholder="Search posts..."
+        hx-get="{% url 'blog:posts_list' %}" 
         hx-trigger="keyup changed delay:300ms"
         hx-target=".post-list" 
         hx-swap="innerHTML"
@@ -24,53 +30,21 @@
       </form>
     </div>
     
-    
     <div class="post-list">
       {% include 'blog/partials/post_list_partial.html' %}
     </div>
   </div>
   
-  
   <div class="sidebar">
-    <div class="filters">
-    <h2>Filters</h2>
-    <form id="filters-form">
-  
-      {{ filter_form.as_p}}
-  
-    <button type="submit"
-            hx-get="{% url 'blog:posts_list' %}"
-            hx-target=".post-list"
-            hx-swap="innerHTML"
-            hx-push-url="true"
-            hx-include="#filters-form">
-      Filter
-    </button>      
-      </form>
-      
-    </div>
+    {% include 'blog/includes/post_filters.html' %}
   </div>
+  
 </div>
 
 {% endblock content %}
 
-
-{% block extra_headers %}
-  <link rel="stylesheet" href="{% static 'css/posts_list.css' %}">
-  <link rel="stylesheet" href="{% static 'css/pagination.css' %}">
-{% endblock extra_headers %}
-
 {% block extra_scripts %}
 
-<script>
-    function initSelect2() {
-      $('.select2').select2();
-    }
-
-    // Initialize Select2 on page load
-    document.addEventListener('DOMContentLoaded', initSelect2);
-
-</script>
-
+<script src="{% static 'js/select2_init.js' %}"></script>
 
 {% endblock extra_scripts %}

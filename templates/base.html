@@ -21,31 +21,13 @@
   {% block extra_headers %}{% endblock extra_headers %}
 </head>
 <body>
+  
+      {% block navbar %}
+      {% include 'navbar.html' %}
+      {% endblock navbar %}
+
   <div class="content">
 
-    <nav>
-      <ul>
-        
-        {% if user.is_authenticated %}
-
-        Hello, {{ user }}
-        
-        {% if user.is_staff %}
-          <li><a href="{% url 'admin:index' %}">Admin</a></li>
-        {% endif %}
-          
-        <li>
-
-          <form action="{% url 'accounts:logout' %}" method="post">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-          </form>
-        </li>
-        {% else %}
-          <li><a href="{% url 'accounts:login' %}">Login</a></li> / <li><a href="{% url 'accounts:register' %}">Register</a></li> 
-        {% endif %}
-      </ul>
-    </nav>
     
     {% block content %}
       

@@ -1,5 +1,7 @@
 .container {
   display: flex;
+  display: flex;
+  flex-direction: row;
 }
 
 .main-content {
@@ -49,6 +51,7 @@
 
 .post-excerpt {
   margin-top: 0;
+  margin-bottom: 10px;
   font-size: 1.2em;
   line-height: 1.2;
 }
@@ -60,9 +63,7 @@
 }
 
 .post-tags {
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
+  margin: 5px;
   font-size: 1.2em;
 }
 

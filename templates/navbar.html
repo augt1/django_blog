@@ -1,0 +1,28 @@
+
+    <nav class="navbar">
+      <div class="nav-links">
+        <div class="nav-link">
+          <a href="{% url 'blog:posts_list' %}">Home</a>
+        </div>
+        {% if user.is_staff %}
+        <div class="nav-link">
+
+          <a href="{% url 'admin:index' %}">Admin</a>
+        </div>
+        {% endif %}
+        
+        {% if user.is_authenticated %}
+        <div class="nav-item">
+          <span>Hello, {{ user }}</span>
+          <form action="{% url 'accounts:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="nav-item">
+          <a href="{% url 'accounts:login' %}">Login</a> / <a href="{% url 'accounts:register' %}">Register</a>
+        </div>
+      </div>
+        {% endif %}
+    </nav>

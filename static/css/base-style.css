@@ -1,8 +1,45 @@
+body {
+  margin: 0;
+}
+
 .content {
   max-width: 1200px;
   margin: 40px auto;
-  padding: 20px;
- 
+  padding: 0;
 }
 
+.navbar {
+  display: flex;
+  background-color: beige;
+  padding: 1rem;
+  /* width: 100%; */
+}
 
+.nav-links {
+  display: flex;
+  flex-direction: row;
+  margin-left: auto;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-link a {
+  text-decoration: none;
+}
+
+.nav-link a:visited {
+  color: inherit;
+}
+
+.nav-link {
+  margin: 1rem;
+  background-color: rgb(194, 160, 108);
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.nav-link:hover {
+  background-color: rgb(255, 255, 255);
+  color: black;
+  cursor: pointer;
+}
