@@ -70,5 +70,6 @@ class UserRegistrationForm(forms.ModelForm):
             new_user.save()
 
         role = self.cleaned_data.get("role").title() + "s"
-        group = Group.objects.get(name=role)
+        group, _ = Group.objects.get_or_create(name=role)
         new_user.groups.add(group)
+

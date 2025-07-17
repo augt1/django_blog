@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
@@ -71,6 +72,18 @@ class Post(models.Model):
             self.published_at = None
 
         super().save(*args, **kwargs)
+        
+        #TODO: add an async task to handle group assignments
+        if self.author:
+            authors_group, _ = Group.objects.get_or_create(name="Authors")
+            self.author.groups.add(authors_group)
+            print(f"Added {self.author.username} to Authors group")
+
+        if self.editors.exists():
+            editors_group, _ = Group.objects.get_or_create(name="Editors")
+            for editor in self.editors.all():
+                print(f"Adding {editor.username} to Editors group")
+                editor.groups.add(editors_group)
 
     def delete(self):
         if self.image:
