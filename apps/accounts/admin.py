@@ -5,6 +5,8 @@ from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from easy_thumbnails.files import get_thumbnailer
 
+from django.db.models import Count
+
 from apps.blog.admin import PostInline
 
 User = get_user_model()
@@ -26,14 +28,22 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ["username", "email"]
     ordering = ["username"]
     show_facets = admin.ShowFacets.ALLOW
+    list_per_page = 20
 
     @admin.display(description="Groups")
     def groups_list(self, obj):
         return ", ".join([group.name for group in obj.groups.all()])
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.prefetch_related("groups", )
 
+        return qs.annotate(
+            total_posts=Count("posts"),
+        )
 
     def total_posts(self, obj):
-        return obj.posts.count()
+        return obj.total_posts
 
     inlines = [PostInline]
 

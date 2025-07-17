@@ -1,14 +1,60 @@
 from django.contrib import admin
-from django.db.models import Q
+from django.contrib.auth import get_user_model
+from django.db.models import Q, Count
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.text import Truncator
 from easy_thumbnails.files import get_thumbnailer
-from django.contrib.auth import get_user_model
 
-from apps.blog.models import Post, Tag, Comment
+
+from apps.blog.models import Comment, Post, Tag
 
 User = get_user_model()
+
+
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug"]
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = [
+        "name",
+    ]
+    list_per_page = 20
+
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_staff
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_add_permission(self, request):
+        return request.user.is_staff
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_staff
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ["name", "post", "created_at", "active"]
+    search_fields = ["post__title", "name", "content"]
+    list_filter = ["active", "created_at"]
+    list_per_page = 20
+
+
+
+class CommentInline(admin.TabularInline):
+    model = Comment
+    extra = 0
+    fields = ("name", "truncated_content", "created_at", "active")
+    readonly_fields = ("created_at", "truncated_content")
+
+    @admin.display(description="Content (truncated)")
+    def truncated_content(self, obj):
+        return Truncator(obj.content).words(20, truncate="...")
 
 
 @admin.action(description="Publish selected posts")
@@ -29,6 +75,8 @@ def post_update_status_archive_action(modeladmin, request, queryset):
     queryset.update(published_at=None)
 
 
+
+
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = [
@@ -39,12 +87,15 @@ class PostAdmin(admin.ModelAdmin):
         "created_at",
         "image_thumbnail",
         "tags_list",
+        "total_comments",
     ]
-    search_filter = [
+    search_fields = [
         "title",
         "content",
         "author__username",
+        "author__email",
     ]
+
     prepopulated_fields = {"slug": ("title",)}
     date_hierarchy = "published_at"
     ordering = ["status", "-published_at", "-created_at"]
@@ -55,6 +106,9 @@ class PostAdmin(admin.ModelAdmin):
         post_update_status_draft_action,
         post_update_status_archive_action,
     ]
+    inlines = [CommentInline]
+    list_per_page = 20
+
 
     class Media:
         js = [
@@ -64,10 +118,15 @@ class PostAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
+        qs = qs.select_related("author").prefetch_related("tags", "editors")
+        qs = qs.annotate(
+            total_comments=Count("comments"),
+        )
 
         if request.user.is_superuser:
             return qs
         return qs.filter(Q(author=request.user) | Q(editors=request.user))
+    
 
     def has_view_permission(self, request, obj=None):
         if request.user.is_superuser:
@@ -106,16 +165,11 @@ class PostAdmin(admin.ModelAdmin):
 
         if obj:  # editing form
             readonly_fields += ["created_at", "updated_at"]
-            
 
             if request.user in obj.editors.all():
                 editable_fields = ["title", "content", "image", "tags", "slug"]
                 all_fields = self.get_fields(request)
-                readonly_fields = [
-                    f
-                    for f in all_fields
-                    if f not in editable_fields
-                ]
+                readonly_fields = [f for f in all_fields if f not in editable_fields]
                 readonly_fields += [
                     "image_preview",
                     "created_at",
@@ -124,7 +178,7 @@ class PostAdmin(admin.ModelAdmin):
 
         if not request.user.is_superuser:
             readonly_fields.append("author")
-        
+
         return list(set(readonly_fields))
 
     def get_list_filter(self, request):
@@ -163,6 +217,11 @@ class PostAdmin(admin.ModelAdmin):
         )
 
         return fieldsets
+    
+
+    def total_comments(self, obj):
+        return obj.comments.count()
+
 
     @admin.display(description="Image")
     def image_thumbnail(self, obj):
@@ -183,6 +242,10 @@ class PostAdmin(admin.ModelAdmin):
     @admin.display(description="Tags")
     def tags_list(self, obj):
         return ", ".join([tag.name for tag in obj.tags.all()])
+    
+
+    def total_comments(self, obj):
+        return obj.total_comments
 
 
 class PostInline(admin.TabularInline):
@@ -195,31 +258,3 @@ class PostInline(admin.TabularInline):
     def truncated_content(self, obj):
         return Truncator(obj.content).words(20, truncate="...")
 
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ["name", "slug"]
-    prepopulated_fields = {"slug": ("name",)}
-    search_fields = [
-        "name",
-    ]
-
-    def has_view_permission(self, request, obj=None):
-        return request.user.is_staff
-
-    def has_module_permission(self, request):
-        return request.user.is_staff
-
-    def has_add_permission(self, request):
-        return request.user.is_staff
-
-    def has_change_permission(self, request, obj=None):
-        return request.user.is_staff
-
-
-@admin.register(Comment)
-class CommentAdmin(admin.ModelAdmin):
-    list_display = ["name", "post", "created_at", "active"]
-    search_fields = ["post__title", "name", "content"]
-    list_filter = ["active", "created_at"]
-    
