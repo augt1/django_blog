@@ -57,7 +57,7 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         # Find is old image exists and is not the same as the new one
         if self.pk:
-            old_image = Post.objects.get(pk=self.pk).image
+            old_image = self._meta.model.objects.get(pk=self.pk).image
             if old_image and old_image != self.image:
                 delete_image_and_thumbanails(old_image)
 
