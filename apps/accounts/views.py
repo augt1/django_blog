@@ -10,7 +10,9 @@ def register(request):
 
         if form.is_valid():
             form.save(commit=True)
+            return redirect("accounts:login")
+    else:
            
-    form = UserRegistrationForm()
+        form = UserRegistrationForm()
 
     return render(request, "accounts/register.html", {"form": form})

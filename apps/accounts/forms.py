@@ -45,13 +45,6 @@ class UserRegistrationForm(forms.ModelForm):
         model = User
         fields = ["email", "first_name", "last_name"]
 
-    def clean_email(self):
-        email = self.cleaned_data.get("email").lower()
-
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("User with this email already exists.")
-        return email
-
     def clean_password2(self):
         password = self.cleaned_data.get("password")
         password2 = self.cleaned_data.get("password2")
