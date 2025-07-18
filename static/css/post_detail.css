@@ -46,6 +46,10 @@
   flex-direction: column;
 }
 
+.comments-list {
+  border-top: #333 solid 1px;
+}
+
 
 .comment {
   background-color: #f0f0f0;

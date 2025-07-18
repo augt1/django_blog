@@ -64,8 +64,8 @@ class UserAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" />', image_url)
         return "No avatar uploaded"
 
-    def has_module_permission(self, request):
-        return request.user.is_staff
+    # def has_module_permission(self, request):
+    #     return request.user.is_staff
 
     def has_view_permission(self, request, obj=None):
         if request.user.is_superuser:
