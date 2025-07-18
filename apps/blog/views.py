@@ -1,8 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
 
@@ -12,7 +15,11 @@ User = get_user_model()
 
 
 def posts_list(request):
-    published_posts = Post.published.select_related("author").prefetch_related("tags", "editors").all()
+    published_posts = (
+        Post.published.select_related("author")
+        .prefetch_related("tags", "editors")
+        .all()
+    )
 
     # handle filters
     search_query = request.GET.get("search", "")
@@ -64,14 +71,25 @@ def post_detail(request, year, month, day, slug):
 
     comments = post.comments.filter(active=True)
 
-    return render(request, "blog/post_detail.html", {"post": post, "comments": comments})
+    return render(
+        request, "blog/post_detail.html", {"post": post, "comments": comments}
+    )
 
 
+@login_required
 def edit_post_view(request, slug):
     post = get_object_or_404(
         Post.published.select_related("author").prefetch_related("tags", "editors"),
         slug=slug,
     )
+
+    if not (
+        request.user == post.author or post.editors.filter(pk=request.user.pk).exists()
+    ):
+        login_url = reverse("accounts:login")
+        current_url = request.get_full_path()
+        redirect_url = f"{login_url}?next={current_url}"
+        return redirect(redirect_url)
 
     if request.method == "POST":
         form = PostForm(request.POST, instance=post, user=request.user)
@@ -99,11 +117,13 @@ def create_comment_view(request, post_id):
 
             return render(request, "blog/partials/comment.html", {"comment": comment})
         else:
-            if 'email' in form.errors:
+            if "email" in form.errors:
                 print(f"Honeypot field triggered, bot detected on post {post_id}.")
 
                 return HttpResponse("")
     else:
         form = CommentForm()
 
-    return render(request, "blog/partials/create_comment_form.html", {"form": form, "post": post})
+    return render(
+        request, "blog/partials/create_comment_form.html", {"form": form, "post": post}
+    )
