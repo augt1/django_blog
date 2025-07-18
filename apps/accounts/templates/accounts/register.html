@@ -10,13 +10,18 @@
 
     
     {% for field in form %}
-    <div>
-
-      {{ field.as_field_group }}
-    </div>
+    
+    {% if field.is_hidden %}
+    {{ field }}
+    {% else %}
+    
+      <p>
+        {{ field.as_field_group }}
+      </p>
       
+    {% endif %}
+  
     {% endfor %}
-      
    
     {% csrf_token %}
     <p><input type="submit" value="Sign Up"></p>

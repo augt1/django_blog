@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
+from apps.core.fields import HoneypotField
+
 User = get_user_model()
 
 
@@ -21,6 +23,7 @@ class UserRegistrationForm(forms.ModelForm):
         ("author", "Author"),
         ("editor", "Editor"),
     ]
+    comments = HoneypotField()
 
     email = forms.EmailField(
         label="Email",

@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
@@ -97,6 +98,11 @@ def create_comment_view(request, post_id):
             comment.save()
 
             return render(request, "blog/partials/comment.html", {"comment": comment})
+        else:
+            if 'email' in form.errors:
+                print(f"Honeypot field triggered, bot detected on post {post_id}.")
+
+                return HttpResponse("")
     else:
         form = CommentForm()
 

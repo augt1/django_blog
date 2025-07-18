@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from apps.blog.models import Comment, Post, Tag
+from apps.core.fields import HoneypotField
 
 User = get_user_model()
 
@@ -82,6 +83,8 @@ class PostForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
+    email = HoneypotField()
+    
     class Meta:
         model = Comment
         fields = ["name", "content"]
