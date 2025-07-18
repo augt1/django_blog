@@ -50,14 +50,12 @@
   
   <div class="comments-container">
     <hr>
-    
     <div class="comments-list">
     {% if comments %}
         <h4>Post Comments</h4>
 
         {% for comment in comments %}
-        
-        
+                
         {% comment %}
           μπορει να γίνει κάπως καλύτερα αυτό, διπλός κώδικας με το partial
         {% endcomment %}
@@ -72,15 +70,9 @@
           </div>
         </div>        
         
-        {% empty %}
-          <p>No comments yet. Be the first to comment!</p>
-        {% endfor %}
-        
-      </div>
-      
-    
-    
+        {% endfor %}    
     {% endif %}
+    </div>
     <button id="add-comment-btn" hx-get="{% url 'blog:create_comment' post.id %}"
       hx-target=".comments-list" hx-swap="beforeend">Add Comment</button>
 

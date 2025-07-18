@@ -11,8 +11,8 @@
 
   <button id="add-comment-btn"
     hx-get="{% url 'blog:create_comment' comment.post.id %}"
-    hx-target="this" 
-    hx-swap="outerHTML" 
+    hx-target=".comments-list" 
+    hx-swap="beforeend" 
     hx-swap-oob="true">
       Add Comment</button>
   </div>
