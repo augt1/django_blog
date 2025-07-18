@@ -6,7 +6,7 @@ from django.db import models
 
 from apps.accounts.utils import user_avatar_upload_path
 from apps.core.utils import delete_image_and_thumbanails
-from apps.core.validators import validate_image_size
+from apps.core.validators import validate_image_file, validate_image_size
 
 
 class User(AbstractUser):
@@ -23,6 +23,7 @@ class User(AbstractUser):
         validators=[
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "gif"]),
             validate_image_size,
+            validate_image_file,
         ],
     )
     bio = models.TextField(

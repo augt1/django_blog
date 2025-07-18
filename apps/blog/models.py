@@ -8,7 +8,7 @@ from django.utils.text import slugify
 
 from apps.blog.utils import post_image_upload_path
 from apps.core.utils import delete_image_and_thumbanails
-from apps.core.validators import validate_image_size
+from apps.core.validators import validate_image_file, validate_image_size
 
 from .managers import PublishedManager
 
@@ -38,6 +38,7 @@ class Post(models.Model):
         validators=[
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "gif"]),
             validate_image_size,
+            validate_image_file,
         ],
     )
     tags = models.ManyToManyField("Tag", blank=True, related_name="posts")
