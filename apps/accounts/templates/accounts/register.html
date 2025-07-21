@@ -8,6 +8,10 @@
   <form method="post" novalidate>
     {{ form.non_field_errors }}
 
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+
     
     {% for field in form %}
     
@@ -24,6 +28,12 @@
     {% endfor %}
    
     {% csrf_token %}
+
+    <div
+      class="cf-turnstile"
+      data-sitekey="0x4AAAAAABl4fc3J_9NCOIgJ"
+    ></div>
+
     <p><input type="submit" value="Sign Up"></p>
     <a href="{% url 'blog:posts_list' %}" >Back</a>
   </form>

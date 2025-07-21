@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
+from apps.core.utils import verify_turnistile_token
 
 from .models import Post
 
@@ -109,6 +110,19 @@ def create_comment_view(request, post_id):
 
     if request.method == "POST":
         form = CommentForm(request.POST)
+
+        verified_token = verify_turnistile_token(request)
+
+        if not verified_token:
+            return render(
+                request,
+                "blog/partials/create_comment_form.html",
+                {
+                    "form": form,
+                    "post": post,
+                    "error": "Please complete the Turnstile challenge.",
+                },
+            )
 
         if form.is_valid():
             comment = form.save(commit=False)
