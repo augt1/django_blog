@@ -30,3 +30,5 @@ def verify_turnistile_token(request):
     except requests.RequestException as e:
         print(f"Error verifying Turnstile token: {e}")
         return False
+    
+

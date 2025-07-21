@@ -10,7 +10,7 @@
 
 
   <button id="add-comment-btn"
-    hx-get="{% url 'blog:create_comment' comment.post.id %}"
+    hx-get="{% url 'blog:create_comment' post.id %}"
     hx-target=".comments-list" 
     hx-swap="beforeend" 
     hx-swap-oob="true">

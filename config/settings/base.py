@@ -181,3 +181,6 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 TURNSTILE_SITE_KEY = "0x4AAAAAABl4fc3J_9NCOIgJ"
 TURNSTILE_SECRET_KEY = "0x4AAAAAABl4ffqPNef2X83LTSbVOzgp4uU"
+
+AKISMET_API_KEY = "2a88dbc3a35a"
+AKISMET_BLOG_URL = "localhost"

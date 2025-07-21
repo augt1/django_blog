@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
@@ -8,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
+from apps.core.akismet_client import check_is_spam
 from apps.core.utils import verify_turnistile_token
 
 from .models import Post
@@ -70,7 +70,7 @@ def post_detail(request, year, month, day, slug):
         slug=slug,
     )
 
-    comments = post.comments.filter(active=True)
+    comments = post.comments.filter(active=True, )
 
     return render(
         request, "blog/post_detail.html", {"post": post, "comments": comments}
@@ -127,9 +127,45 @@ def create_comment_view(request, post_id):
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
+
+            is_spam, level = check_is_spam(
+                user_ip=request.META.get("REMOTE_ADDR"),
+                comment_content=form.data.get("content"),
+                comment_author=form.data.get("name"),
+                comment_type="comment",
+            )
+
+            print(f"Spam check result for post {post_id}: {is_spam}, level: {level}")
+
+            if is_spam:
+                if level == 2:
+                    print(f"Blatant spam detected on post {post_id}.")
+                    message = (
+                        "Your comment was detected as spam and has been discarded."
+                    )
+
+                elif level == 1:
+                    comment.is_spam = True
+                    comment.active = False
+                    comment.save()
+                    print(f"Spam detected on post {post_id}, manual review required.")
+                    message = "Your comment is under review and will be published if approved."
+
+                return render(
+                    request,
+                    "blog/partials/comment_spam.html",
+                    {
+                        "message": message,
+                        "post": post,
+                    },
+                )
             comment.save()
 
-            return render(request, "blog/partials/comment.html", {"comment": comment})
+            return render(
+                request,
+                "blog/partials/comment.html",
+                {"comment": comment, "post": post},
+            )
         else:
             if "email" in form.errors:
                 print(f"Honeypot field triggered, bot detected on post {post_id}.")
