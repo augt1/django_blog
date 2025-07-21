@@ -70,7 +70,9 @@ def post_detail(request, year, month, day, slug):
         slug=slug,
     )
 
-    comments = post.comments.filter(active=True, )
+    comments = post.comments.filter(
+        active=True,
+    )
 
     return render(
         request, "blog/post_detail.html", {"post": post, "comments": comments}
@@ -96,7 +98,32 @@ def edit_post_view(request, slug):
         form = PostForm(request.POST, instance=post, user=request.user)
 
         if form.is_valid():
-            post = form.save()
+            post = form.save(commit=False)
+
+            #TODO: telika den xreiazetai, sto review na to vgaloume kai rollback ti vasi
+
+            is_spam, level, message = check_is_spam(
+                user_ip=request.META.get("REMOTE_ADDR"),
+                comment_content=post.content,
+                comment_author=form.data.get(request.user),
+                comment_author_email=request.user.email,
+                comment_type="forum-post",
+            )
+
+            if is_spam:
+
+                if level == 1:
+                    post.is_spam = True
+                    post.save()
+
+                return render(
+                    request,
+                    "blog/edit_post_form.html",
+                    {"form": form, "post": post, "error": message},
+                )
+
+            post.save()
+
             return redirect(post.get_absolute_url())
 
     else:
@@ -128,28 +155,19 @@ def create_comment_view(request, post_id):
             comment = form.save(commit=False)
             comment.post = post
 
-            is_spam, level = check_is_spam(
+            is_spam, level, message = check_is_spam(
                 user_ip=request.META.get("REMOTE_ADDR"),
                 comment_content=form.data.get("content"),
                 comment_author=form.data.get("name"),
                 comment_type="comment",
             )
 
-            print(f"Spam check result for post {post_id}: {is_spam}, level: {level}")
-
             if is_spam:
-                if level == 2:
-                    print(f"Blatant spam detected on post {post_id}.")
-                    message = (
-                        "Your comment was detected as spam and has been discarded."
-                    )
 
-                elif level == 1:
+                if level == 1:
                     comment.is_spam = True
                     comment.active = False
                     comment.save()
-                    print(f"Spam detected on post {post_id}, manual review required.")
-                    message = "Your comment is under review and will be published if approved."
 
                 return render(
                     request,
@@ -159,6 +177,7 @@ def create_comment_view(request, post_id):
                         "post": post,
                     },
                 )
+
             comment.save()
 
             return render(

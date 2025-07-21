@@ -13,6 +13,12 @@
 {% csrf_token %}
 {{ form.as_p}}
 
+
+
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+
 <button type="submit">Save</button>
 <button onclick="history.back()">Cancel</button>
 

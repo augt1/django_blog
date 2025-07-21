@@ -20,13 +20,16 @@ def check_is_spam(user_ip, comment_content, comment_author=None, comment_author_
 
         if classification == akismet.CheckResponse.DISCARD:
             # The post was "blatant" spam, reject it.
-            return True, 2
+            message = "Your comment was detected as spam and has been discarded."
+            return True, 2, message
         elif classification == akismet.CheckResponse.SPAM:
             # Send it into the manual-review queue.
-            return True, 1
+            message = "Your comment is under review and will be published if approved."
+            return True, 1, message
         elif classification == akismet.CheckResponse.HAM:
             # The post wasn't spam, allow it.
-            return False, 0
+            message = "Your comment has been accepted."
+            return False, 0, message
 
     
     except Exception as e:
