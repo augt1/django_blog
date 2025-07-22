@@ -144,6 +144,7 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)
     is_spam = models.BooleanField(default=False)
+    user_ip = models.GenericIPAddressField(blank=True, null=True, default="0.0.0.0")
 
     def __str__(self):
         return f"Comment by {self.name} on {self.post}"

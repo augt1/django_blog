@@ -100,30 +100,6 @@ def edit_post_view(request, slug):
         if form.is_valid():
             post = form.save()
 
-            # TODO: telika den xreiazetai, sto review na to vgaloume kai rollback ti vasi
-
-            # is_spam, level, message = check_is_spam(
-            #     user_ip=request.META.get("REMOTE_ADDR"),
-            #     comment_content=post.content,
-            #     comment_author=form.data.get(request.user),
-            #     comment_author_email=request.user.email,
-            #     comment_type="forum-post",
-            # )
-
-            # if is_spam:
-
-            #     if level == 1:
-            #         post.is_spam = True
-            #         post.save()
-
-            #     return render(
-            #         request,
-            #         "blog/edit_post_form.html",
-            #         {"form": form, "post": post, "error": message},
-            #     )
-
-            # post.save()
-
             return redirect(post.get_absolute_url())
 
     else:
@@ -155,6 +131,7 @@ def create_comment_view(request, post_id):
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
+            comment.user_ip = request.META.get("REMOTE_ADDR")
 
             akismet_client = AkismetClient()
             try:
@@ -168,7 +145,7 @@ def create_comment_view(request, post_id):
                         {"form": form, "post": post},
                     )
                 result = akismet_client.comment_check(
-                    user_ip=request.META.get("REMOTE_ADDR"),
+                    user_ip=comment.user_ip,
                     comment_content=form.cleaned_data.get("content"),
                     comment_author=form.cleaned_data.get("name"),
                     comment_type="comment",

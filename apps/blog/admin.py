@@ -1,17 +1,15 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from django.db.models import Q, Count
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.text import Truncator
 from easy_thumbnails.files import get_thumbnailer
 
-
 from apps.blog.models import Comment, Post, Tag
+from apps.core.akismet_client import AkismetClient
 
 User = get_user_model()
-
-
 
 
 @admin.register(Tag)
@@ -22,7 +20,6 @@ class TagAdmin(admin.ModelAdmin):
         "name",
     ]
     list_per_page = 20
-
 
     def has_view_permission(self, request, obj=None):
         return request.user.is_staff
@@ -37,13 +34,44 @@ class TagAdmin(admin.ModelAdmin):
         return request.user.is_staff
 
 
+@admin.action(description="Mark selected comments as spam")
+def mark_comments_as_spam(modeladmin, request, queryset):
+    akismet_client = AkismetClient()
+
+    for comment in queryset:
+        akismet_client.submit_spam(
+            user_ip=comment.user_ip,
+            comment_content=comment.content,
+            comment_author=comment.name,
+            comment_type="comment",
+        ) 
+        
+    queryset.update(is_spam=True, active=False)
+
+@admin.action(description="Mark selected comments as not spam(ham)")
+def mark_comments_as_ham(modeladmin, request, queryset):
+    akismet_client = AkismetClient()
+
+    for comment in queryset:
+        akismet_client.submit_ham(
+            user_ip=comment.user_ip,
+            comment_content=comment.content,
+            comment_author=comment.name,
+            comment_type="comment",
+        ) 
+        
+    queryset.update(is_spam=True, active=False)
+
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ["name", "post", "created_at", "active"]
+    list_display = ["name", "post", "created_at", "active", "is_spam"]
     search_fields = ["post__title", "name", "content"]
-    list_filter = ["active", "created_at"]
+    list_filter = ["active", "is_spam", "created_at"]
     list_per_page = 20
-
+    actions = [
+        mark_comments_as_spam,
+        mark_comments_as_ham,
+    ]
 
 
 class CommentInline(admin.TabularInline):
@@ -73,8 +101,6 @@ def post_update_status_draft_action(modeladmin, request, queryset):
 def post_update_status_archive_action(modeladmin, request, queryset):
     queryset.update(status=Post.Status.ARCHIVED)
     queryset.update(published_at=None)
-
-
 
 
 @admin.register(Post)
@@ -109,7 +135,6 @@ class PostAdmin(admin.ModelAdmin):
     inlines = [CommentInline]
     list_per_page = 20
 
-
     class Media:
         js = [
             "https://cdn.tiny.cloud/1/1acr1awsu4kzcz8efm1e45ma95nlrpqwbspquyy9e8tev24a/tinymce/7/tinymce.min.js",
@@ -126,7 +151,6 @@ class PostAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(Q(author=request.user) | Q(editors=request.user))
-    
 
     def has_view_permission(self, request, obj=None):
         if request.user.is_superuser:
@@ -217,11 +241,9 @@ class PostAdmin(admin.ModelAdmin):
         )
 
         return fieldsets
-    
 
     def total_comments(self, obj):
         return obj.comments.count()
-
 
     @admin.display(description="Image")
     def image_thumbnail(self, obj):
@@ -242,7 +264,6 @@ class PostAdmin(admin.ModelAdmin):
     @admin.display(description="Tags")
     def tags_list(self, obj):
         return ", ".join([tag.name for tag in obj.tags.all()])
-    
 
     def total_comments(self, obj):
         return obj.total_comments
@@ -257,4 +278,3 @@ class PostInline(admin.TabularInline):
     @admin.display(description="Content (truncated)")
     def truncated_content(self, obj):
         return Truncator(obj.content).words(20, truncate="...")
-
