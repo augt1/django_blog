@@ -43,7 +43,6 @@ class Post(models.Model):
     )
     tags = models.ManyToManyField("Tag", blank=True, related_name="posts")
     editors = models.ManyToManyField(User, blank=True, related_name="editable_posts")
-    is_spam = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
