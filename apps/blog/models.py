@@ -4,7 +4,6 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.text import slugify
 
 from apps.blog.utils import post_image_upload_path
 from apps.core.utils import delete_image_and_thumbanails
@@ -62,9 +61,6 @@ class Post(models.Model):
             old_image = self._meta.model.objects.get(pk=self.pk).image
             if old_image and old_image != self.image:
                 delete_image_and_thumbanails(old_image)
-
-        if not self.slug:
-            self.slug = slugify(self.title)
 
         if self.status == self.Status.PUBLISHED and not self.published_at:
             self.published_at = timezone.now()
@@ -127,11 +123,7 @@ class Tag(models.Model):
         verbose_name_plural = "Tags"
         ordering = ["name"]
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save()
-
+  
     def get_absolute_url(self):
         return reverse("blog:tag_detail", kwargs={"slug": self.slug})
 
