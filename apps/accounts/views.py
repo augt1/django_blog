@@ -1,8 +1,14 @@
 from django.contrib.auth import views
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 
 from apps.accounts.forms import UserRegistrationForm
 from apps.core.utils import verify_turnistile_token
+from apps.core.decorators import user_owns_resource
+
+
+User = get_user_model()
 
 
 def register(request):
@@ -31,3 +37,12 @@ def register(request):
         form = UserRegistrationForm()
 
     return render(request, "accounts/register.html", {"form": form})
+
+
+@login_required 
+@user_owns_resource(param_name='user_id')
+def user_profile_view(request, user_id):
+    user_qs = User.objects.prefetch_related('posts', 'editable_posts')
+    user = get_object_or_404(user_qs, id=user_id)
+
+    return render(request, "accounts/user_profile.html", {"user": user})

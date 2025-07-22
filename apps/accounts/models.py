@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 
 from apps.accounts.utils import user_avatar_upload_path
 from apps.core.utils import delete_image_and_thumbanails
@@ -65,3 +66,6 @@ class User(AbstractUser):
         if self.image:
             delete_image_and_thumbanails(self.image)
         super().delete()
+
+    def get_absolute_url(self):
+        return reverse('accounts:user_profile', kwargs={'user_id': self.id})

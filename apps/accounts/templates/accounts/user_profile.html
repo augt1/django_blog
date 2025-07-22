@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user }} Profile{% endblock title %}
+
+{% block content %}
+
+
+
+<h1>{{ user }}'s Profile</h1>
+
+
+{% if user.is_authenticated %}
+
+
+{% if user.posts.exists %}
+<h2>My Posts</h2>
+{% for post in user.posts.all %}
+
+<div class="post">
+  <h3>{{ post.title }}</h3>
+  <p>{{ post.content|safe }}</p>
+  <p><small>Posted on: {{ post.created_at }}</small></p>
+</div>
+
+{% endfor %}  
+{% endif %}
+
+
+{% if user.editable_posts.exists %}
+
+<h2>Posts I can Edit</h2>
+
+{% for post in user.editable_posts.all %}
+
+<div class="post">
+  <h3>{{ post.title }}</h3>
+  <p>{{ post.content|safe }}</p>
+    <p><small>Posted on: {{ post.created_at }}</small></p>
+  </div>
+
+  
+  {% endfor %}
+  
+  
+  {% endif %}
+  
+  {% endif %}
+  
+  
+{% endblock content %}

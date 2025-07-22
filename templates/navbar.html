@@ -4,16 +4,24 @@
         <div class="nav-link">
           <a href="{% url 'blog:posts_list' %}">Home</a>
         </div>
-        {% if user.is_staff %}
-        <div class="nav-link">
+        
+        {% if user.is_authenticated %}
+        
+          {% if user.is_staff %}
+            <div class="nav-link">
+              <a href="{% url 'admin:index' %}">Admin</a>
+            </div>
+          {% endif %}
 
-          <a href="{% url 'admin:index' %}">Admin</a>
-        </div>
+          <div class="nav-link">
+            <a href="{{ user.get_absolute_url }}">My posts</a>
+          </div>
+          
         {% endif %}
         
         {% if user.is_authenticated %}
         <div class="nav-item">
-          <span>Hello, {{ user }}</span>
+          <span>Hello, <a href="{{ user.get_absolute_url }}">{{ user }}</a></span>
           <form action="{% url 'accounts:logout' %}" method="post">
             {% csrf_token %}
             <button type="submit">Logout</button>
