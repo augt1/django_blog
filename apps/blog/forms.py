@@ -20,12 +20,19 @@ class FilterForm(forms.Form):
         widget=forms.SelectMultiple(attrs={"class": "select2"}),
         label="Authors",
     )
-    tags = forms.ModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
+    # tags = forms.ModelMultipleChoiceField(
+    #     queryset=Tag.objects.all(),
+    #     required=False,
+    #     widget=forms.SelectMultiple(attrs={"class": "select2"}),
+    #     label="Tags",
+    # )
+    tags = forms.MultipleChoiceField(
+        choices=[(tag.slug, tag.name) for tag in Tag.objects.all()],
         required=False,
         widget=forms.SelectMultiple(attrs={"class": "select2"}),
         label="Tags",
     )
+
     published_from = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}),

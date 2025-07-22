@@ -22,7 +22,7 @@ def posts_list(request):
         .all()
     )
 
-
+    print(request.GET)
     # handle filters
     search_query = request.GET.get("search", "")
     authors_query = request.GET.getlist("authors", [])
@@ -41,7 +41,7 @@ def posts_list(request):
     if authors_query:
         published_posts = published_posts.filter(author_id__in=authors_query)
     if tags_query:
-        published_posts = published_posts.filter(tags__in=tags_query).distinct()
+        published_posts = published_posts.filter(tags__slug__in=tags_query).distinct()
 
     paginator = Paginator(published_posts, 5)
     page_number = request.GET.get("page")

@@ -40,7 +40,7 @@
           {% if post.tags %}
             {% for tag in post.tags.all %}
             <span class="tag">
-              <a href="###">{{ tag.name }}</a>
+              <a href="{% url 'blog:posts_list' %}?tags={{ tag.slug }}">{{ tag.name }}</a>
             </span>
             {% endfor %}
           {% endif %}
