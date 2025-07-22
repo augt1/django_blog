@@ -16,22 +16,24 @@
 
 <div class="container">
 
-  
-  <div class="main-content">
+    <div class="main-content">
     
     <div class="search-form">
-      <form id="search-form">
-        <input type="text" name="search" placeholder="Search posts..."
-        hx-get="{% url 'blog:posts_list' %}" 
-        hx-trigger="keyup changed delay:300ms"
-        hx-target=".post-list" 
-        hx-swap="innerHTML"
-        hx-push-url="true">
+      <form id="search-form" action="{% querystring %}" method="get">
+        <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search posts...">
+        <!-- Loop through all GET parameters dynamically -->
+          {% for key, value in request.GET.items %}
+              {% if key != 'search' %} <!-- Avoid duplicating the 'query' parameter -->
+                  <input type="hidden" name="{{ key }}" value="{{ value }}">
+              {% endif %}
+          {% endfor %}
+        <button class="btn" type="submit">Search</button>
+        </p>
       </form>
     </div>
     
     <div class="post-list">
-      {% include 'blog/partials/post_list_partial.html' %}
+      {% include 'blog/includes/post_list.html' %}
     </div>
   </div>
   

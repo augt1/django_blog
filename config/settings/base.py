@@ -83,14 +83,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-  
     "default": {
         "ENGINE": config("DB_ENGINE", default="django.db.backends.postgresql"),
         "NAME": config("DB_NAME", default="blog_db"),
         "USER": config("DB_USER", default="blog_user"),
         "PASSWORD": config("DB_PASSWORD", default="postgres"),
         "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),}
+        "PORT": config("DB_PORT", default="5432"),
+    }
 }
 
 
@@ -127,7 +127,7 @@ LOGOUT_REDIRECT_URL = "blog:posts_list"
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Athens"
 
 USE_I18N = True
 
@@ -168,7 +168,7 @@ THUMBNAIL_ALIASES = {
         "post_preview": {
             "size": (200, 200),
             "crop": False,
-        }, 
+        },
         "post_detail": {
             "size": (250, 0),
             "crop": False,

@@ -22,6 +22,7 @@ def posts_list(request):
         .all()
     )
 
+
     # handle filters
     search_query = request.GET.get("search", "")
     authors_query = request.GET.getlist("authors", [])
@@ -46,15 +47,13 @@ def posts_list(request):
     page_number = request.GET.get("page")
     posts = paginator.get_page(page_number)
 
+    filter_form = FilterForm(request.GET)
+
+    
     context = {
         "posts": posts,
+        "filter_form": filter_form,
     }
-
-    if request.headers.get("HX-Request"):
-        return render(request, "blog/partials/post_list_partial.html", context)
-
-    filter_form = FilterForm()
-    context["filter_form"] = filter_form
 
     return render(request, "blog/posts_list.html", context)
 

@@ -3,15 +3,11 @@
   <form id="filters-form">
 
     {{ filter_form.as_p}}
+    <div class="filter-buttons">
+      <button class="btn" type="submit">Filter</button>      
+      <a class="btn" href="{% url 'blog:posts_list' %}">Clear Fields</a>      
+    </div>
 
-    <button type="submit"
-            hx-get="{% url 'blog:posts_list' %}"
-            hx-target=".post-list"
-            hx-swap="innerHTML"
-            hx-push-url="true"
-            hx-include="#filters-form">
-      Filter
-    </button>      
   </form>
       
 </div>

@@ -87,3 +87,9 @@
   text-decoration: none;
   transition: background-color 0.3s ease;
 }
+
+.filter-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
