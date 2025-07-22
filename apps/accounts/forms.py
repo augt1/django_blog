@@ -59,7 +59,7 @@ class UserRegistrationForm(forms.ModelForm):
     def save(self, commit=True):
         new_user = super().save(commit=False)
         new_user.username = self.cleaned_data.get("email").split("@")[0]
-        new_user.is_staff = True
+        new_user.is_staff = False
         new_user.set_password(self.cleaned_data.get("password"))
 
         if commit:

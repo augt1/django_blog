@@ -12,6 +12,24 @@ from apps.blog.admin import PostInline
 User = get_user_model()
 
 
+
+
+@admin.action(description="Mark selected users as staff")
+def make_user_staff(modeladmin, request, queryset):        
+    queryset.update(is_staff=True)
+
+@admin.action(description="Remove staff status from selected users")
+def remove_user_from_staff(modeladmin, request, queryset):
+    queryset.update(is_staff=False)
+
+@admin.action(description="Activate selected users")
+def activate_users(modeladmin, request, queryset):
+    queryset.update(is_active=True)
+
+@admin.action(description="Deactivate selected users")
+def deactivate_users(modeladmin, request, queryset):
+    queryset.update(is_active=False)
+
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
 
@@ -24,11 +42,17 @@ class UserAdmin(admin.ModelAdmin):
         "avatar",
         "groups_list",
     ]
-    list_filter = ["is_staff", "is_active"]
+    list_filter = ["is_staff", "is_active", "groups"]
     search_fields = ["username", "email"]
     ordering = ["username"]
     show_facets = admin.ShowFacets.ALLOW
     list_per_page = 20
+    actions = [
+        make_user_staff,
+        remove_user_from_staff,
+        activate_users,
+        deactivate_users,
+    ]
 
     @admin.display(description="Groups")
     def groups_list(self, obj):
