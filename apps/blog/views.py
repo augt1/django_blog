@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
-from apps.core.akismet_client import check_is_spam
+from apps.core.akismet_client import AkismetClient, AkismetClientError
 from apps.core.utils import verify_turnistile_token
 
 from .models import Post
@@ -98,31 +98,31 @@ def edit_post_view(request, slug):
         form = PostForm(request.POST, instance=post, user=request.user)
 
         if form.is_valid():
-            post = form.save(commit=False)
+            post = form.save()
 
-            #TODO: telika den xreiazetai, sto review na to vgaloume kai rollback ti vasi
+            # TODO: telika den xreiazetai, sto review na to vgaloume kai rollback ti vasi
 
-            is_spam, level, message = check_is_spam(
-                user_ip=request.META.get("REMOTE_ADDR"),
-                comment_content=post.content,
-                comment_author=form.data.get(request.user),
-                comment_author_email=request.user.email,
-                comment_type="forum-post",
-            )
+            # is_spam, level, message = check_is_spam(
+            #     user_ip=request.META.get("REMOTE_ADDR"),
+            #     comment_content=post.content,
+            #     comment_author=form.data.get(request.user),
+            #     comment_author_email=request.user.email,
+            #     comment_type="forum-post",
+            # )
 
-            if is_spam:
+            # if is_spam:
 
-                if level == 1:
-                    post.is_spam = True
-                    post.save()
+            #     if level == 1:
+            #         post.is_spam = True
+            #         post.save()
 
-                return render(
-                    request,
-                    "blog/edit_post_form.html",
-                    {"form": form, "post": post, "error": message},
-                )
+            #     return render(
+            #         request,
+            #         "blog/edit_post_form.html",
+            #         {"form": form, "post": post, "error": message},
+            #     )
 
-            post.save()
+            # post.save()
 
             return redirect(post.get_absolute_url())
 
@@ -136,6 +136,7 @@ def create_comment_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == "POST":
+
         form = CommentForm(request.POST)
 
         verified_token = verify_turnistile_token(request)
@@ -155,36 +156,65 @@ def create_comment_view(request, post_id):
             comment = form.save(commit=False)
             comment.post = post
 
-            is_spam, level, message = check_is_spam(
-                user_ip=request.META.get("REMOTE_ADDR"),
-                comment_content=form.data.get("content"),
-                comment_author=form.data.get("name"),
-                comment_type="comment",
-            )
-
-            if is_spam:
-
-                if level == 1:
+            akismet_client = AkismetClient()
+            try:
+                is_valid_key = akismet_client.verify_key()
+                
+                if not is_valid_key:
+                    message = "Invalid Akismet API key."
+                    return render(
+                        request,
+                        "blog/partials/create_comment_form.html",
+                        {"form": form, "post": post},
+                    )
+                result = akismet_client.comment_check(
+                    user_ip=request.META.get("REMOTE_ADDR"),
+                    comment_content=form.cleaned_data.get("content"),
+                    comment_author=form.cleaned_data.get("name"),
+                    comment_type="comment",
+                )
+                message = result["message"]
+                
+                if result["status"] == "spam":
                     comment.is_spam = True
                     comment.active = False
                     comment.save()
 
+                    return render(
+                        request,
+                        "blog/partials/comment_spam.html",
+                        {
+                            "message": message,
+                            "post": post,
+                        },
+                    )
+                
+                if result["status"] == "discard":
+
+                    return render(
+                        request,
+                        "blog/partials/comment_spam.html",
+                        {
+                            "message": message,
+                            "post": post,
+                        },
+                    )
+                
+
+                #if ham
+                comment.save()
+
                 return render(
                     request,
-                    "blog/partials/comment_spam.html",
-                    {
-                        "message": message,
-                        "post": post,
-                    },
+                    "blog/partials/comment.html",
+                    {"comment": comment, "post": post},
                 )
+            except AkismetClientError as e:
+                message = f"Akismet error: {str(e)}"
 
-            comment.save()
+            except Exception as e:
+                message = f"An unexpected error occurred: {str(e)}" 
 
-            return render(
-                request,
-                "blog/partials/comment.html",
-                {"comment": comment, "post": post},
-            )
         else:
             if "email" in form.errors:
                 print(f"Honeypot field triggered, bot detected on post {post_id}.")

@@ -6,4 +6,3 @@ easy-thumbnails==2.10
 Pillow==11.3.0
 psycopg==3.2.9
 requests==2.32.4
-akimset==24.11.0
