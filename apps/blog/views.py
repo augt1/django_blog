@@ -70,7 +70,7 @@ def post_detail(request, year, month, day, slug):
     )
 
     comments = post.comments.filter(
-        active=True,
+        active=True
     )
 
     return render(
@@ -108,6 +108,7 @@ def edit_post_view(request, slug):
 
 
 def create_comment_view(request, post_id):
+    
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == "POST":
@@ -154,36 +155,19 @@ def create_comment_view(request, post_id):
                 if result["status"] == "spam":
                     comment.is_spam = True
                     comment.active = False
-                    comment.save()
 
-                    return render(
-                        request,
-                        "blog/partials/comment_spam.html",
-                        {
-                            "message": message,
-                            "post": post,
-                        },
-                    )
-                
-                if result["status"] == "discard":
+                # if result["status"] == "discard":
 
-                    return render(
-                        request,
-                        "blog/partials/comment_spam.html",
-                        {
-                            "message": message,
-                            "post": post,
-                        },
-                    )
-                
-
-                #if ham
                 comment.save()
+                
+                comments = post.comments.filter(
+                    active=True,
+                )
 
                 return render(
                     request,
-                    "blog/partials/comment.html",
-                    {"comment": comment, "post": post},
+                    "blog/partials/comments_list.html",
+                    {"comments": comments, "post": post},
                 )
             except AkismetClientError as e:
                 message = f"Akismet error: {str(e)}"
