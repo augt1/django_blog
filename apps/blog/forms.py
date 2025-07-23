@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from apps.blog.models import Comment, Post, Tag
 
@@ -13,12 +14,7 @@ class FilterForm(forms.Form):
         widget=forms.SelectMultiple(attrs={"class": "select2"}),
         label="Authors",
     )
-    # tags = forms.ModelMultipleChoiceField(
-    #     queryset=Tag.objects.all(),
-    #     required=False,
-    #     widget=forms.SelectMultiple(attrs={"class": "select2"}),
-    #     label="Tags",
-    # )
+   
     tags = forms.MultipleChoiceField(
         choices=[(tag.slug, tag.name) for tag in Tag.objects.all()],
         required=False,
@@ -36,6 +32,41 @@ class FilterForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"}),
         label="Published To",
     )
+
+    def clean_published_from(self):
+        from_date = self.cleaned_data.get("published_from")
+        if from_date:
+            #convert to datetime
+            from_date_datetime = timezone.datetime.combine(from_date, timezone.datetime.min.time())
+            
+            #make aware, default timezone to seting TIME_ZONE 
+            aware_time = timezone.make_aware(from_date_datetime)
+            local_time = timezone.localtime(aware_time)
+
+            return local_time
+        else:
+            return None
+        
+    def clean_published_to(self):
+        to_date = self.cleaned_data.get("published_to")
+        if to_date:
+            #convert to datetime
+            to_date_datetime = timezone.datetime.combine(to_date, timezone.datetime.max.time())
+            #make aware, default timezone to seting TIME_ZONE 
+            local_time = timezone.make_aware(to_date_datetime)
+
+            return local_time
+        else:
+            return None
+    
+    def clean(self):
+        from_date = self.cleaned_data.get("published_from")
+        to_date = self.cleaned_data.get("published_to")
+
+        if to_date and from_date:
+
+            if to_date < from_date:
+                raise forms.ValidationError("Publish From cannot be after Publish To")
 
 
 class PostForm(forms.ModelForm):

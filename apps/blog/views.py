@@ -11,9 +11,18 @@ from apps.blog.forms import CommentForm, FilterForm, PostForm
 from apps.core.akismet_client import AkismetClient, AkismetClientError
 from apps.core.utils import verify_turnistile_token
 
-from .models import Post, Comment
+from .models import Post
 
 User = get_user_model()
+
+
+# Prepare a map of common locations to timezone choices you wish to offer.
+common_timezones = {
+    "London": "Europe/London",
+    "Paris": "Europe/Paris",
+    "New York": "America/New_York",
+    "Athens": "Europe/Athens",
+}
 
 
 def posts_list(request):
@@ -23,36 +32,39 @@ def posts_list(request):
         .all()
     )
 
-    print(request.GET)
-    # handle filters
     search_query = request.GET.get("search", "")
-    authors_query = request.GET.getlist("authors", [])
-    tags_query = request.GET.getlist("tags", [])
-    published_from_query = request.GET.get("published_from", "")
-    published_to_query = request.GET.get("published_to", "")
-
-    if published_from_query:
-        published_posts = published_posts.filter(published_at__gte=published_from_query)
-    if published_to_query:
-        published_posts = published_posts.filter(published_at__lte=published_to_query)
     if search_query:
         published_posts = published_posts.filter(
             Q(title__icontains=search_query) | Q(content__icontains=search_query)
         )
-    if authors_query:
-        published_posts = published_posts.filter(author_id__in=authors_query)
-    if tags_query:
-        published_posts = published_posts.filter(tags__slug__in=tags_query).distinct()
+
+    filter_form = FilterForm(request.GET)
+
+    if filter_form.is_valid():
+
+        authors_query = filter_form.cleaned_data.get("authors") 
+        tags_query = filter_form.cleaned_data.get("tags")
+        published_from_query = filter_form.cleaned_data.get("published_from", "")
+        published_to_query = filter_form.cleaned_data.get("published_to", "")
+
+        if published_from_query:
+            published_posts = published_posts.filter(published_at__gte=published_from_query)
+        if published_to_query:
+            published_posts = published_posts.filter(published_at__lte=published_to_query)
+        if authors_query:
+            published_posts = published_posts.filter(author_id__in=authors_query)
+        if tags_query:
+            published_posts = published_posts.filter(tags__slug__in=tags_query).distinct()
 
     paginator = Paginator(published_posts, 5)
     page_number = request.GET.get("page")
     posts = paginator.get_page(page_number)
 
-    filter_form = FilterForm(request.GET)
 
     context = {
         "posts": posts,
         "filter_form": filter_form,
+        "timezones": common_timezones,
     }
 
     return render(request, "blog/posts_list.html", context)
