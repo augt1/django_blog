@@ -166,11 +166,6 @@ def create_comment_view(request, post_id):
         except Exception as e:
             message = f"An unexpected error occurred: {str(e)}"
 
-    else:
-        if "email" in form.errors:
-            print(f"Honeypot field triggered, bot detected on post {post_id}.")
-
-            return HttpResponse("")
     
     comments = post.comments.filter(active=True)
     

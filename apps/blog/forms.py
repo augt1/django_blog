@@ -2,18 +2,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from apps.blog.models import Comment, Post, Tag
-from apps.core.fields import HoneypotField
 
 User = get_user_model()
 
 
 class FilterForm(forms.Form):
-    # status = forms.ChoiceField(
-    #     choices=[(""), ("All")] + Post.Status.choices,
-    #     required=False,
-    #     widget=forms.Select(attrs={"class": "select2"}),
-    #     label="Status",
-    # )
     authors = forms.ModelMultipleChoiceField(
         queryset=User.objects.filter(is_staff=True),
         required=False,
@@ -90,7 +83,6 @@ class PostForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
-    email = HoneypotField()
     
     class Meta:
         model = Comment
