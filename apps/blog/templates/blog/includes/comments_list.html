@@ -17,10 +17,3 @@
       {% endfor %}    
     </div>
 
-
-  <button id="add-comment-btn"
-    hx-get="{% url 'blog:create_comment' post.id %}"
-    hx-target=".comments-list" 
-    hx-swap="outerHTML">
-      Add Comment</button>
-  </div>

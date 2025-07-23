@@ -5,12 +5,13 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
 from apps.core.akismet_client import AkismetClient, AkismetClientError
 from apps.core.utils import verify_turnistile_token
 
-from .models import Post
+from .models import Post, Comment
 
 User = get_user_model()
 
@@ -49,7 +50,6 @@ def posts_list(request):
 
     filter_form = FilterForm(request.GET)
 
-    
     context = {
         "posts": posts,
         "filter_form": filter_form,
@@ -69,12 +69,15 @@ def post_detail(request, year, month, day, slug):
         slug=slug,
     )
 
-    comments = post.comments.filter(
-        active=True
-    )
+    comments = post.comments.filter(active=True)
+
+    comment_form = CommentForm()
 
     return render(
-        request, "blog/post_detail.html", {"post": post, "comments": comments}
+        request, "blog/post_detail.html", {
+            "post": post, 
+            "comments": comments,
+            "comment_form": comment_form}
     )
 
 
@@ -107,43 +110,36 @@ def edit_post_view(request, slug):
     return render(request, "blog/edit_post_form.html", {"form": form, "post": post})
 
 
+@require_POST
 def create_comment_view(request, post_id):
-    
+
     post = get_object_or_404(Post, id=post_id)
 
-    if request.method == "POST":
+    form = CommentForm(request.POST)
 
-        form = CommentForm(request.POST)
+    verified_token = verify_turnistile_token(request)
 
-        verified_token = verify_turnistile_token(request)
+    if not verified_token:
+        form.add_error(None, "Please complete the Turnstile challenge.")
 
-        if not verified_token:
-            return render(
-                request,
-                "blog/partials/create_comment_form.html",
-                {
-                    "form": form,
-                    "post": post,
-                    "error": "Please complete the Turnstile challenge.",
-                },
-            )
 
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.user_ip = request.META.get("REMOTE_ADDR")
+    if form.is_valid():
+        print("FORM IS VALID")
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.user_ip = request.META.get("REMOTE_ADDR")
 
-            akismet_client = AkismetClient()
-            try:
-                is_valid_key = akismet_client.verify_key()
-                
-                if not is_valid_key:
-                    message = "Invalid Akismet API key."
-                    return render(
-                        request,
-                        "blog/partials/create_comment_form.html",
-                        {"form": form, "post": post},
-                    )
+        akismet_client = AkismetClient()
+        
+        try:
+
+            is_valid_key = akismet_client.verify_key()
+
+            if not is_valid_key:
+                form.add_error(None, "A server error occured.")
+                print("Invalid Akismet API key.")
+            else:
+
                 result = akismet_client.comment_check(
                     user_ip=comment.user_ip,
                     comment_content=form.cleaned_data.get("content"),
@@ -151,38 +147,36 @@ def create_comment_view(request, post_id):
                     comment_type="comment",
                 )
                 message = result["message"]
-                
+
                 if result["status"] == "spam":
+                    print("Comment is SPAM")
                     comment.is_spam = True
                     comment.active = False
 
                 # if result["status"] == "discard":
 
                 comment.save()
-                
-                comments = post.comments.filter(
-                    active=True,
-                )
 
-                return render(
-                    request,
-                    "blog/partials/comments_list.html",
-                    {"comments": comments, "post": post},
-                )
-            except AkismetClientError as e:
-                message = f"Akismet error: {str(e)}"
+                form = CommentForm()
 
-            except Exception as e:
-                message = f"An unexpected error occurred: {str(e)}" 
+        except AkismetClientError as e:
+            message = f"Akismet error: {str(e)}"
 
-        else:
-            if "email" in form.errors:
-                print(f"Honeypot field triggered, bot detected on post {post_id}.")
 
-                return HttpResponse("")
+        except Exception as e:
+            message = f"An unexpected error occurred: {str(e)}"
+
     else:
-        form = CommentForm()
+        if "email" in form.errors:
+            print(f"Honeypot field triggered, bot detected on post {post_id}.")
 
+            return HttpResponse("")
+    
+    comments = post.comments.filter(active=True)
+    
     return render(
-        request, "blog/partials/create_comment_form.html", {"form": form, "post": post}
+        request, "blog/post_detail.html", {
+            "comment_form": form, 
+            "post": post,
+            "comments": comments}
     )

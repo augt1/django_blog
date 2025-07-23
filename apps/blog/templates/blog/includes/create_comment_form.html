@@ -1,0 +1,20 @@
+
+
+<form method="post" action="{% url 'blog:create_comment' post.id %}">
+
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+
+    
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <div
+    class="cf-turnstile"
+    data-sitekey="0x4AAAAAABl4fc3J_9NCOIgJ">
+  </div>
+
+  <button class="btn" type="submit">Submit Comment</button>
+</form>
+

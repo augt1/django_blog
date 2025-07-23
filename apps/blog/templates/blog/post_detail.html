@@ -49,9 +49,9 @@
 
   
   <div class="comments-container">
-    {% include 'blog/partials/comments_list.html' %}
+    {% include 'blog/includes/comments_list.html' %}
    
-  </div>
+{% include 'blog/includes/create_comment_form.html' with form=comment_form %}  </div>
 
 
 {% endblock content %}
