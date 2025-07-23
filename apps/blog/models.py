@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.validators import FileExtensionValidator
@@ -70,7 +72,7 @@ class Post(models.Model):
 
         super().save(*args, **kwargs)
 
-        #TODO: add an async task to handle group assignments
+        # TODO: add an async task to handle group assignments
         if self.author:
             authors_group, _ = Group.objects.get_or_create(name="Authors")
             self.author.groups.add(authors_group)
@@ -88,24 +90,20 @@ class Post(models.Model):
         super().delete()
 
     def get_absolute_url(self):
+        dt = (
+            self.published_at
+            if self.status == self.Status.PUBLISHED
+            else self.created_at
+        )
+
+        dt_utc = dt.astimezone(datetime.timezone.utc)
+
         return reverse(
             "blog:post_detail",
             kwargs={
-                "year": (
-                    self.published_at.year
-                    if self.status == self.Status.PUBLISHED
-                    else self.created_at.year
-                ),
-                "month": (
-                    self.published_at.month
-                    if self.status == self.Status.PUBLISHED
-                    else self.created_at.month
-                ),
-                "day": (
-                    self.published_at.day
-                    if self.status == self.Status.PUBLISHED
-                    else self.created_at.day
-                ),
+                "year": dt_utc.year,
+                "month": dt_utc.month,
+                "day": dt_utc.day,
                 "slug": self.slug,
             },
         )
@@ -123,7 +121,6 @@ class Tag(models.Model):
         verbose_name_plural = "Tags"
         ordering = ["name"]
 
-  
     def get_absolute_url(self):
         return reverse("blog:tag_detail", kwargs={"slug": self.slug})
 
