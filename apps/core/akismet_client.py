@@ -69,7 +69,7 @@ class AkismetClient:
             message = "Your comment is under review and will be published if approved."
         elif body == "false":
             status = "ham"
-            message = "Your comment has been accepted and will be published."
+            message = "Your comment has been posted successfully."
 
         else:
             raise AkismetClientError(f"Unexpected response from Akismet: {body}")

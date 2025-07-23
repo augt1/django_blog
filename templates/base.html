@@ -10,6 +10,7 @@
 
   
   <link rel="stylesheet" href="{% static 'css/base-style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/messages.css' %}">
 
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
   
@@ -30,6 +31,17 @@
       {% endblock navbar %}
 
   <div class="content">
+    
+    {% if messages %}
+    <div id="messages">
+      {% for message in messages %}
+        <div class="alert {{ message.tags }}">
+          {{ message }}
+          <button onclick="this.parentElement.style.display='none';">x</button>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
     
     {% block content %}
@@ -40,6 +52,7 @@
   </div>
 
   <script src="{% static 'js/turnstile.js' %}"></script>
+  <script src="{% static 'js/messages.js' %}"></script>
 
   {% block extra_scripts %}{% endblock extra_scripts %}
   

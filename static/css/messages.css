@@ -1,0 +1,26 @@
+#messages {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1100;
+
+}
+
+#messages .alert {
+    padding: 1rem;
+    margin-top: 20px;
+    border-radius: 6px;
+
+}
+
+#messages .error {
+    background-color: lightcoral;
+    border: 1px solid rgb(226, 97, 97);
+    color: rgb(211, 20, 20);
+}
+
+#messages .success {
+    background-color: lightgreen;
+    border: 1px solid rgb(126, 236, 126);
+    color: rgb(13, 119, 45);
+}

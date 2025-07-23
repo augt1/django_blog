@@ -2,10 +2,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.contrib import messages
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
 from apps.core.akismet_client import AkismetClient, AkismetClientError
@@ -120,10 +120,11 @@ def create_comment_view(request, post_id):
     verified_token = verify_turnistile_token(request)
 
     if not verified_token:
-        form.add_error(None, "Please complete the Turnstile challenge.")
+        form.add_error(None, "Verification failed. Please try submitting the comment again.")
 
 
     if form.is_valid():
+        print("FORM IS VALID")
         comment = form.save(commit=False)
         comment.post = post
         comment.user_ip = request.META.get("REMOTE_ADDR")
@@ -148,22 +149,30 @@ def create_comment_view(request, post_id):
                 message = result["message"]
 
                 if result["status"] == "spam":
+                    print("SPAAAAM")
                     comment.is_spam = True
                     comment.active = False
+                    messages.error(request, message)
+                    comment.save()
 
-                # if result["status"] == "discard":
+                if result["status"] == "discard":
+                    messages.error(request, message)
+                
+                if result['status'] == 'ham':
+                    messages.success(request, message)
+                    comment.save()
 
-                comment.save()
 
                 return redirect(post.get_absolute_url())
 
 
         except AkismetClientError as e:
             message = f"Akismet error: {str(e)}"
-
+            messages.error(request, message)
 
         except Exception as e:
             message = f"An unexpected error occurred: {str(e)}"
+            messages.error(request, message)
 
     
     comments = post.comments.filter(active=True)
