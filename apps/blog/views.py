@@ -124,7 +124,6 @@ def create_comment_view(request, post_id):
 
 
     if form.is_valid():
-        print("FORM IS VALID")
         comment = form.save(commit=False)
         comment.post = post
         comment.user_ip = request.META.get("REMOTE_ADDR")
@@ -149,7 +148,6 @@ def create_comment_view(request, post_id):
                 message = result["message"]
 
                 if result["status"] == "spam":
-                    print("Comment is SPAM")
                     comment.is_spam = True
                     comment.active = False
 
@@ -157,7 +155,8 @@ def create_comment_view(request, post_id):
 
                 comment.save()
 
-                form = CommentForm()
+                return redirect(post.get_absolute_url())
+
 
         except AkismetClientError as e:
             message = f"Akismet error: {str(e)}"
