@@ -1,3 +1,4 @@
+import os
 import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -15,6 +16,14 @@ def delete_image_and_thumbnails(instance, delete=False):
     if delete:
         default_storage.delete(instance.image.name)
         get_thumbnailer(instance.image).delete_thumbnails()
+
+        image_path = instance.image.path
+        image_dir = os.path.dirname(image_path)
+
+        try:
+            os.rmdir(image_dir) #removes if directory is empty only
+        except OSError:
+            pass #directory not empty, pass
 
 
 ### TURNSTILE ###
