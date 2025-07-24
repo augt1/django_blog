@@ -150,6 +150,7 @@ class PostAdmin(admin.ModelAdmin):
     def delete_model(self, request, obj):
         if obj.image:
             delete_image_and_thumbnails(obj, delete=True)
+        super().delete_model(request, obj)
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)

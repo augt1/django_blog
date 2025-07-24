@@ -90,13 +90,15 @@ class BasePostForm(forms.ModelForm):
     def save(self, commit=True, *args, **kwargs):
         instance = super().save(commit=False)
 
-        if instance.pk:
+        if instance.pk and "image" in self.changed_data:
             delete_image_and_thumbnails(instance)
 
         if commit:
             instance.save()
             self.save_m2m()
-            assign_user_groups(instance)
+            if "author" in self.changed_data or "editors" in self.changed_data:
+                assign_user_groups(instance)
+                
         return instance
 
 
@@ -128,7 +130,7 @@ class PostForm(BasePostForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
 
-        super().__init__(*args, **kwargs)   
+        super().__init__(*args, **kwargs)
 
         if self.instance and self.user:
             is_author = self.user == self.instance.author
@@ -143,7 +145,7 @@ class PostForm(BasePostForm):
         self.fields["editors"].queryset = User.objects.filter(is_staff=True).exclude(
             id=self.instance.author_id
         )
-    
+
 
 class PostAdminForm(BasePostForm):
     pass
