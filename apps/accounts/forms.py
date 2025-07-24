@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
+from apps.core.utils import delete_image_and_thumbnails
 
 User = get_user_model()
 
@@ -67,3 +68,16 @@ class UserRegistrationForm(forms.ModelForm):
         group, _ = Group.objects.get_or_create(name=role)
         new_user.groups.add(group)
 
+
+class UserAdminForm(forms.ModelForm):
+    def save(self, commit=True, *args, **kwargs):
+        instance = super().save(commit=False)
+
+        if instance.pk and "image" in self.changed_data:
+            delete_image_and_thumbnails(instance)
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+        return instance

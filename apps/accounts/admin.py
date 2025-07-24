@@ -7,7 +7,9 @@ from easy_thumbnails.files import get_thumbnailer
 
 from django.db.models import Count
 
+from apps.accounts.forms import UserAdminForm
 from apps.blog.admin import PostInline
+from apps.core.utils import delete_image_and_thumbnails
 
 User = get_user_model()
 
@@ -32,6 +34,7 @@ def deactivate_users(modeladmin, request, queryset):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
+    form = UserAdminForm
 
     list_display = [
         "username",
@@ -53,6 +56,14 @@ class UserAdmin(admin.ModelAdmin):
         activate_users,
         deactivate_users,
     ]
+
+    def delete_model(self, request, obj):
+        if obj.image:
+            delete_image_and_thumbnails(obj, delete=True)
+            
+        super().delete_model(request, obj)
+
+        
 
     @admin.display(description="Groups")
     def groups_list(self, obj):
@@ -87,9 +98,6 @@ class UserAdmin(admin.ModelAdmin):
             image_url = get_thumbnailer(obj.image)["avatar"].url
             return format_html('<img src="{}" />', image_url)
         return "No avatar uploaded"
-
-    # def has_module_permission(self, request):
-    #     return request.user.is_staff
 
     def has_view_permission(self, request, obj=None):
         if request.user.is_superuser:

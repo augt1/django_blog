@@ -6,7 +6,6 @@ from django.db import models
 from django.urls import reverse
 
 from apps.accounts.utils import user_avatar_upload_path
-from apps.core.utils import delete_image_and_thumbnails
 from apps.core.validators import validate_image_file, validate_image_size
 
 
@@ -53,21 +52,6 @@ class User(AbstractUser):
                         "email": "User with this email already exists.",
                     }
                 )
-
-    def save(self, *args, **kwargs):
-        # Find is old image exists and is not the same as the new one
-        if self.pk:
-            old_image = self._meta.model.objects.get(pk=self.pk).image
-            if old_image and old_image != self.image:
-                delete_image_and_thumbnails(old_image)
-        self.full_clean()
-
-        super().save(*args, **kwargs)
-
-    def delete(self):
-        if self.image:
-            delete_image_and_thumbnails(self.image)
-        super().delete()
 
     def get_absolute_url(self):
         return reverse("accounts:user_profile", kwargs={"user_id": self.id})
