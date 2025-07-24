@@ -1,6 +1,4 @@
-# Create your models here.
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
@@ -8,11 +6,27 @@ from django.urls import reverse
 from apps.accounts.utils import user_avatar_upload_path
 from apps.core.validators import validate_image_file, validate_image_size
 
+import uuid
 
 class User(AbstractUser):
     """
     Custom user model that extends the default Django user model.
     """
+
+    username = models.CharField(
+        "username",
+        max_length=150,
+        blank=True,
+        null=True,
+    )
+
+    email = models.EmailField(
+        "email address",
+        unique=True, 
+        error_messages={
+            "unique": "A user with that email already exists.",
+        },
+    )
 
     image = models.ImageField(
         upload_to=user_avatar_upload_path,
@@ -33,25 +47,19 @@ class User(AbstractUser):
         help_text="Short biography (optional).",
     )
 
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+
     def __str__(self):
         if self.first_name and self.last_name:
-            return f"{self.first_name} {self.last_name}"
+            return self.get_full_name()
         elif self.first_name:
-            return self.first_name
-        elif self.username:
-            return self.username
+            return self.get_short_name()
         elif self.email:
             return self.email
 
-    def clean(self):
-        if self.email:
-            qs = User.objects.filter(email__iexact=self.email).exclude(pk=self.pk)
-            if qs.exists():
-                raise ValidationError(
-                    {
-                        "email": "User with this email already exists.",
-                    }
-                )
-
     def get_absolute_url(self):
-        return reverse("accounts:user_profile", kwargs={"user_id": self.id})
+        return reverse("accounts:user_profile", kwargs={"user_id": self.uuid})

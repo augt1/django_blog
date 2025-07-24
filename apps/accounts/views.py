@@ -38,6 +38,6 @@ def register(request):
 @user_owns_resource(param_name='user_id')
 def user_profile_view(request, user_id):
     user_qs = User.objects.prefetch_related('posts', 'editable_posts')
-    user = get_object_or_404(user_qs, id=user_id)
+    user = get_object_or_404(user_qs, uuid=user_id)
 
     return render(request, "accounts/user_profile.html", {"user": user})

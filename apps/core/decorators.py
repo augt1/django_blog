@@ -13,7 +13,7 @@ def user_owns_resource(param_name='user_id'):
         def _wrapped_view(request, *args, **kwargs):
             user_id = kwargs.get(param_name)
 
-            if str(request.user.id) != str(user_id) and not request.user.is_superuser:
+            if str(request.user.uuid) != str(user_id) and not request.user.is_superuser:
                 return HttpResponseForbidden("You are not authorized to access this resource.")
 
             return view_func(request, *args, **kwargs)

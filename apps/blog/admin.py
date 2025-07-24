@@ -125,7 +125,8 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = [
         "title",
         "content",
-        "author__username",
+        "author__first_name",
+        "author__last_name",
         "author__email",
     ]
 
@@ -218,7 +219,7 @@ class PostAdmin(admin.ModelAdmin):
         ]
 
         if request.user.is_superuser:
-            list_filter.append("author__username")
+            list_filter.append("author__email")
         return list_filter
 
     def get_fieldsets(self, request, obj=None):

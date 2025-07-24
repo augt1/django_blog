@@ -37,7 +37,6 @@ class UserAdmin(admin.ModelAdmin):
     form = UserAdminForm
 
     list_display = [
-        "username",
         "email",
         "is_staff",
         "is_active",
@@ -46,8 +45,8 @@ class UserAdmin(admin.ModelAdmin):
         "groups_list",
     ]
     list_filter = ["is_staff", "is_active", "groups"]
-    search_fields = ["username", "email"]
-    ordering = ["username"]
+    search_fields = ["email"]
+    ordering = ["first_name", "email"]
     show_facets = admin.ShowFacets.ALLOW
     list_per_page = 20
     actions = [
@@ -60,7 +59,7 @@ class UserAdmin(admin.ModelAdmin):
     def delete_model(self, request, obj):
         if obj.image:
             delete_image_and_thumbnails(obj, delete=True)
-            
+
         super().delete_model(request, obj)
 
         
