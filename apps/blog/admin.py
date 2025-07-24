@@ -6,8 +6,11 @@ from django.utils.html import format_html
 from django.utils.text import Truncator
 from easy_thumbnails.files import get_thumbnailer
 
+from apps.blog.forms import PostAdminForm
 from apps.blog.models import Comment, Post, Tag
 from apps.core.akismet_client import AkismetClient
+from apps.core.utils import delete_image_and_thumbnails
+
 
 User = get_user_model()
 
@@ -83,6 +86,9 @@ class CommentInline(admin.TabularInline):
     @admin.display(description="Content (truncated)")
     def truncated_content(self, obj):
         return Truncator(obj.content).words(20, truncate="...")
+    
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.action(description="Publish selected posts")
@@ -105,6 +111,7 @@ def post_update_status_archive_action(modeladmin, request, queryset):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
+    form = PostAdminForm
     list_display = [
         "title",
         "author",
@@ -125,7 +132,6 @@ class PostAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     date_hierarchy = "published_at"
     ordering = ["status", "-published_at", "-created_at"]
-    # raw_id_fields = ["author"]
     autocomplete_fields = ["author", "tags", "editors"]
     actions = [
         post_update_status_published_action,
@@ -141,6 +147,10 @@ class PostAdmin(admin.ModelAdmin):
             "js/tinymce_init.js",
         ]
 
+    def delete_model(self, request, obj):
+        if obj.image:
+            delete_image_and_thumbnails(obj, delete=True)
+    
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.select_related("author").prefetch_related("tags", "editors")
@@ -176,11 +186,6 @@ class PostAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return request.user
-
-    def save_model(self, request, obj, form, change):
-        if not change or not obj.author:
-            obj.author = request.user
-        super().save_model(request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = [

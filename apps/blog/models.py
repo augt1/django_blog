@@ -1,14 +1,11 @@
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
-from django.utils import timezone
 
 from apps.blog.utils import post_image_upload_path
-from apps.core.utils import delete_image_and_thumbanails
 from apps.core.validators import validate_image_file, validate_image_size
 
 from .managers import PublishedManager
@@ -51,43 +48,10 @@ class Post(models.Model):
     class Meta:
         verbose_name = "Post"
         verbose_name_plural = "Posts"
-        # TODO: think ordering and add indexes
         ordering = ["-created_at"]
 
     objects = models.Manager()
     published = PublishedManager()
-
-    def save(self, *args, **kwargs):
-        # Find is old image exists and is not the same as the new one
-        if self.pk:
-            old_image = self._meta.model.objects.get(pk=self.pk).image
-            if old_image and old_image != self.image:
-                delete_image_and_thumbanails(old_image)
-
-        if self.status == self.Status.PUBLISHED and not self.published_at:
-            self.published_at = timezone.now()
-
-        if self.status == self.Status.DRAFT:
-            self.published_at = None
-
-        super().save(*args, **kwargs)
-
-        # TODO: add an async task to handle group assignments
-        if self.author:
-            authors_group, _ = Group.objects.get_or_create(name="Authors")
-            self.author.groups.add(authors_group)
-            print(f"Added {self.author.username} to Authors group")
-
-        if self.editors.exists():
-            editors_group, _ = Group.objects.get_or_create(name="Editors")
-            for editor in self.editors.all():
-                print(f"Adding {editor.username} to Editors group")
-                editor.groups.add(editors_group)
-
-    def delete(self):
-        if self.image:
-            delete_image_and_thumbanails(self.image)
-        super().delete()
 
     def get_absolute_url(self):
         dt = (
