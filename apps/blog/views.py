@@ -1,3 +1,8 @@
+import datetime
+import zoneinfo
+
+from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -72,13 +77,19 @@ def posts_list(request):
 
 def post_detail(request, year, month, day, slug):
     qs = Post.published.select_related("author").prefetch_related("tags", "editors")
+
+    dt = timezone.make_aware(datetime.datetime(year, month, day), timezone=datetime.timezone.utc)
+    # dt_ath = dt.astimezone(zoneinfo.ZoneInfo(settings.TIME_ZONE))
+   
+
     post = get_object_or_404(
         qs,
         status=Post.Status.PUBLISHED,
-        published_at__year=year,
-        published_at__month=month,
-        published_at__day=day,
-        slug=slug,
+        published_at__range=(dt.min, dt.max),
+        # published_at__year= year,
+        # published_at__month= month,
+        # published_at__day= day,
+        slug=slug
     )
 
     comments = post.comments.filter(active=True)
@@ -136,7 +147,6 @@ def create_comment_view(request, post_id):
 
 
     if form.is_valid():
-        print("FORM IS VALID")
         comment = form.save(commit=False)
         comment.post = post
         comment.user_ip = request.META.get("REMOTE_ADDR")

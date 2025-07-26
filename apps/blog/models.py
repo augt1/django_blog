@@ -60,14 +60,12 @@ class Post(models.Model):
             else self.created_at
         )
 
-        dt_utc = dt.astimezone(datetime.timezone.utc)
-
         return reverse(
             "blog:post_detail",
             kwargs={
-                "year": dt_utc.year,
-                "month": dt_utc.month,
-                "day": dt_utc.day,
+                "year": dt.year,
+                "month": dt.month,
+                "day": dt.day,
                 "slug": self.slug,
             },
         )
