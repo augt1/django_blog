@@ -62,8 +62,6 @@ class UserAdmin(admin.ModelAdmin):
 
         super().delete_model(request, obj)
 
-        
-
     @admin.display(description="Groups")
     def groups_list(self, obj):
         return ", ".join([group.name for group in obj.groups.all()])

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.blog.models import Comment, Post, Tag
-from apps.blog.utils import assign_user_groups
+from apps.blog.utils import assign_user_groups, handle_old_author, handle_old_editors
 from apps.core.utils import delete_image_and_thumbnails
 
 User = get_user_model()
@@ -44,8 +44,7 @@ class FilterForm(forms.Form):
             )
 
             # make aware, default timezone to seting TIME_ZONE
-            aware_time = timezone.make_aware(from_date_datetime)
-            local_time = timezone.localtime(aware_time)
+            local_time = timezone.make_aware(from_date_datetime)   #perito? 
 
             return local_time
         else:
@@ -93,12 +92,22 @@ class BasePostForm(forms.ModelForm):
         if instance.pk and "image" in self.changed_data:
             delete_image_and_thumbnails(instance)
 
+        if instance.pk and "author" in self.changed_data:
+            handle_old_author(instance)
+
+        if instance.pk and "editors" in self.changed_data:
+            new_editors = self.cleaned_data.get("editors")
+            handle_old_editors(instance, new_editors)
+
         if commit:
+            print("inside commit true")
             instance.save()
             self.save_m2m()
             if "author" in self.changed_data or "editors" in self.changed_data:
-                assign_user_groups(instance)
-                
+                assign_user_groups(
+                    self.cleaned_data.get("author"), self.cleaned_data.get("editors")
+                )
+
         return instance
 
 

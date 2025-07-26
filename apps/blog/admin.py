@@ -197,7 +197,7 @@ class PostAdmin(admin.ModelAdmin):
         if obj:  # editing form
             readonly_fields += ["created_at", "updated_at"]
 
-            if request.user in obj.editors.all():
+            if request.user in obj.editors.all() and not request.user.is_superuser:
                 editable_fields = ["title", "content", "image", "tags", "slug"]
                 all_fields = self.get_fields(request)
                 readonly_fields = [f for f in all_fields if f not in editable_fields]
