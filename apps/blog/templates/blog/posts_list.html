@@ -18,20 +18,6 @@
 
     <div class="main-content">
     
-    <div class="search-form">
-      <form id="search-form" action="{% querystring %}" method="get">
-        <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search posts...">
-        <!-- Loop through all GET parameters dynamically -->
-          {% for key, value in request.GET.items %}
-              {% if key != 'search' %} <!-- Avoid duplicating the 'query' parameter -->
-                  <input type="hidden" name="{{ key }}" value="{{ value }}">
-              {% endif %}
-          {% endfor %}
-        <button class="btn" type="submit">Search</button>
-        </p>
-      </form>
-    </div>
-    
     <div class="post-list">
       {% include 'blog/includes/post_list.html' %}
     </div>
@@ -48,5 +34,25 @@
 {% block extra_scripts %}
 
 <script src="{% static 'js/select2_init.js' %}"></script>
+
+<script>
+  function preserveQueryParams(event) {
+    event.preventDefault(); // Stop default form submission
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // Add/overwrite the form fields in the URL parameters
+    for (const [key, value] of formData.entries()) {
+      searchParams.set(key, value);
+    }
+
+    // Reconstruct the URL with updated params and redirect
+    const newUrl = window.location.pathname + '?' + searchParams.toString();
+    window.location.href = newUrl;
+  }
+</script>
+
 
 {% endblock extra_scripts %}

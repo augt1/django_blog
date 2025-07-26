@@ -1,8 +1,11 @@
 <div class="filters">
   <h2>Filters</h2>
-  <form id="filters-form">
+  <form id="filters-form" method="get" action="{% url 'blog:posts_list' %}">
+    <label for="search">Search:</label>
+    <input id="search" type="text" name="search" value="{{ request.GET.search }}" placeholder="Search posts...">
 
     {{ filter_form.as_p}}
+
     <div class="filter-buttons">
       <button class="btn" type="submit">Filter</button>      
       <a class="btn" href="{% url 'blog:posts_list' %}">Clear Fields</a>      
@@ -11,3 +14,4 @@
   </form>
       
 </div>
+
