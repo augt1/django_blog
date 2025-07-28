@@ -21,15 +21,6 @@ from .models import Post
 User = get_user_model()
 
 
-# Prepare a map of common locations to timezone choices you wish to offer.
-common_timezones = {
-    "London": "Europe/London",
-    "Paris": "Europe/Paris",
-    "New York": "America/New_York",
-    "Athens": "Europe/Athens",
-}
-
-
 def posts_list(request):
     published_posts = (
         Post.published.select_related("author")
@@ -69,7 +60,6 @@ def posts_list(request):
     context = {
         "posts": posts,
         "filter_form": filter_form,
-        "timezones": common_timezones,
     }
 
     return render(request, "blog/posts_list.html", context)
