@@ -59,13 +59,15 @@ class Post(models.Model):
             if self.status == self.Status.PUBLISHED
             else self.created_at
         )
+        #make sure post links are in utc
+        dt_utc = dt.astimezone(datetime.timezone.utc)
 
         return reverse(
             "blog:post_detail",
             kwargs={
-                "year": dt.year,
-                "month": dt.month,
-                "day": dt.day,
+                "year": dt_utc.year,
+                "month": dt_utc.month,
+                "day": dt_utc.day,
                 "slug": self.slug,
             },
         )
