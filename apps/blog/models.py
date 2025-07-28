@@ -59,7 +59,7 @@ class Post(models.Model):
             if self.status == self.Status.PUBLISHED
             else self.created_at
         )
-
+        #make sure post links are in utc
         dt_utc = dt.astimezone(datetime.timezone.utc)
 
         return reverse(

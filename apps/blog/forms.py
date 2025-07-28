@@ -38,7 +38,7 @@ class FilterForm(forms.Form):
     def clean_published_from(self):
         from_date = self.cleaned_data.get("published_from")
         if from_date:
-            # convert to datetime
+            # convert to datetime and start fo day
             from_date_datetime = timezone.datetime.combine(
                 from_date, timezone.datetime.min.time()
             )
@@ -53,12 +53,14 @@ class FilterForm(forms.Form):
     def clean_published_to(self):
         to_date = self.cleaned_data.get("published_to")
         if to_date:
-            # convert to datetime
+            # convert to datetime and end of day
             to_date_datetime = timezone.datetime.combine(
                 to_date, timezone.datetime.max.time()
             )
             # make aware, default timezone to seting TIME_ZONE
-            local_time = timezone.make_aware(to_date_datetime)
+            aware_time = timezone.make_aware(to_date_datetime)
+            local_time = timezone.localtime(aware_time)
+
 
             return local_time
         else:
