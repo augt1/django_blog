@@ -5,7 +5,7 @@
 
   <h1>Register a new User</h1>
   <p>Please, sign up using the following form:</p>
-  <form method="post" novalidate>
+  <form method="post" novalidate class="turnstile">
     {{ form.non_field_errors }}
 
   {% if error %}
@@ -32,9 +32,10 @@
     <div
       class="cf-turnstile"
       data-sitekey="0x4AAAAAABl4fc3J_9NCOIgJ"
+      data-callback="enableSubmit"
     ></div>
 
-    <p><input type="submit" value="Sign Up"></p>
+    <button type="submit">Sign Up</button>
     <a href="{% url 'blog:posts_list' %}" >Back</a>
   </form>
 

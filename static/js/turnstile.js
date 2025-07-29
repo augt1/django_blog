@@ -1,13 +1,15 @@
-  document.body.addEventListener('htmx:afterSwap', function(evt) {
-    // If Turnstile is present and the widget is not rendered yet
-    if (typeof turnstile !== 'undefined') {
-      document.querySelectorAll('.cf-turnstile').forEach((el) => {
-        if (!el.hasAttribute('data-rendered')) {
-          turnstile.render(el, {
-            sitekey: el.getAttribute('data-sitekey')
-          });
-          el.setAttribute('data-rendered', 'true');
-        }
-      });
-    }
-  });
+window.addEventListener('DOMContentLoaded', () => {
+  const submitBtn = document.querySelector('.turnstile button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+  }
+});
+
+
+
+  function enableSubmit() {
+  const submitButton = document.querySelector('.turnstile button[type="submit"]');
+  if (submitButton) {
+    submitButton.disabled = false;
+  }
+}

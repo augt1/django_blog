@@ -1,6 +1,6 @@
 
 
-<form method="post" action="{% url 'blog:create_comment' post.id %}">
+<form class="turnstile" method="post" action="{% url 'blog:create_comment' post.id %}">
 
   {% if error %}
     <p style="color: red;">{{ error }}</p>
@@ -12,7 +12,8 @@
 
   <div
     class="cf-turnstile"
-    data-sitekey="0x4AAAAAABl4fc3J_9NCOIgJ">
+    data-sitekey="0x4AAAAAABl4fc3J_9NCOIgJ"
+    data-callback="enableSubmit">
   </div>
 
   <button class="btn" type="submit">Submit Comment</button>

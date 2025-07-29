@@ -62,3 +62,10 @@ body {
 .btn:hover {
   background-color: #ddd;
 }
+
+
+.btn[disabled] {
+  opacity: 0.6; 
+  cursor: not-allowed;
+  pointer-events: none; 
+}
