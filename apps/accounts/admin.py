@@ -2,10 +2,9 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
+from django.db.models import Count
 from django.utils.html import format_html
 from easy_thumbnails.files import get_thumbnailer
-
-from django.db.models import Count
 
 from apps.accounts.forms import UserAdminForm
 from apps.blog.admin import PostInline
@@ -14,23 +13,25 @@ from apps.core.image_utils import delete_image_and_thumbnails
 User = get_user_model()
 
 
-
-
 @admin.action(description="Mark selected users as staff")
-def make_user_staff(modeladmin, request, queryset):        
+def make_user_staff(modeladmin, request, queryset):
     queryset.update(is_staff=True)
+
 
 @admin.action(description="Remove staff status from selected users")
 def remove_user_from_staff(modeladmin, request, queryset):
     queryset.update(is_staff=False)
 
+
 @admin.action(description="Activate selected users")
 def activate_users(modeladmin, request, queryset):
     queryset.update(is_active=True)
 
+
 @admin.action(description="Deactivate selected users")
 def deactivate_users(modeladmin, request, queryset):
     queryset.update(is_active=False)
+
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -65,10 +66,12 @@ class UserAdmin(admin.ModelAdmin):
     @admin.display(description="Groups")
     def groups_list(self, obj):
         return ", ".join([group.name for group in obj.groups.all()])
-    
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = qs.prefetch_related("groups", )
+        qs = qs.prefetch_related(
+            "groups",
+        )
 
         return qs.annotate(
             total_posts=Count("posts"),
@@ -97,9 +100,15 @@ class UserAdmin(admin.ModelAdmin):
         return "No avatar uploaded"
 
     def has_view_permission(self, request, obj=None):
+        # Superusers can always view the User admin page
         if request.user.is_superuser:
             return True
-        
+
+        # non superusers cannot view the User admin page
+        if request.path.startswith("/admin/accounts/user/"):
+            return False
+
+        # All staff authors can access the User model for dropdown selections
         is_author = request.user.groups.filter(name="Authors").exists()
         return request.user.is_staff and is_author
 
