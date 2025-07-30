@@ -11,7 +11,6 @@ from apps.blog.models import Comment, Post, Tag
 from apps.core.akismet_client import AkismetClient
 from apps.core.image_utils import delete_image_and_thumbnails
 
-
 User = get_user_model()
 
 
@@ -47,9 +46,10 @@ def mark_comments_as_spam(modeladmin, request, queryset):
             comment_content=comment.content,
             comment_author=comment.name,
             comment_type="comment",
-        ) 
-        
+        )
+
     queryset.update(is_spam=True, active=False)
+
 
 @admin.action(description="Mark selected comments as not spam(ham)")
 def mark_comments_as_ham(modeladmin, request, queryset):
@@ -61,9 +61,10 @@ def mark_comments_as_ham(modeladmin, request, queryset):
             comment_content=comment.content,
             comment_author=comment.name,
             comment_type="comment",
-        ) 
-        
+        )
+
     queryset.update(is_spam=True, active=False)
+
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
@@ -105,7 +106,7 @@ class CommentInline(admin.TabularInline):
     @admin.display(description="Content (truncated)")
     def truncated_content(self, obj):
         return Truncator(obj.content).words(20, truncate="...")
-    
+
     def has_add_permission(self, request, obj=None):
         return False
 
@@ -126,6 +127,37 @@ def post_update_status_draft_action(modeladmin, request, queryset):
 def post_update_status_archive_action(modeladmin, request, queryset):
     queryset.update(status=Post.Status.ARCHIVED)
     queryset.update(published_at=None)
+
+
+class OwnerShipFilter(admin.SimpleListFilter):
+    # Filter posts user own or can edit
+    title = "Ownership"
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = "ownership"
+
+    def lookups(self, request, model_admin):
+        if request.user.is_superuser:
+            return []
+        return [
+            ("own", "Own Posts"),
+            ("editable", "Editable Posts"),
+        ]
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if request.user.is_superuser:
+            return queryset  # no filter for superusers
+        if self.value() == "own":
+            return queryset.filter(author=request.user)
+        elif self.value() == "editable":
+            return queryset.filter(editors=request.user)
+
+        return queryset
 
 
 @admin.register(Post)
@@ -171,7 +203,7 @@ class PostAdmin(admin.ModelAdmin):
         if obj.image:
             delete_image_and_thumbnails(obj, delete=True)
         super().delete_model(request, obj)
-    
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.select_related("author").prefetch_related("tags", "editors")
@@ -235,6 +267,7 @@ class PostAdmin(admin.ModelAdmin):
         list_filter = [
             "status",
             "published_at",
+            OwnerShipFilter,
         ]
 
         if request.user.is_superuser:
