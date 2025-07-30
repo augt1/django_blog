@@ -76,6 +76,25 @@ class CommentAdmin(admin.ModelAdmin):
         mark_comments_as_ham,
     ]
 
+    def get_queryset(self, request):
+        # only see comments of own posts or editable posts
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(Q(post__author=request.user) | Q(post__editors=request.user))
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # post dropdown in forms only posts that user owns or is editor
+        if db_field.name == "post":
+            if request.user.is_superuser:
+                kwargs["queryset"] = Post.objects.all()
+            else:
+                kwargs["queryset"] = Post.objects.filter(
+                    Q(author=request.user) | Q(editors=request.user)
+                ).distinct()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 class CommentInline(admin.TabularInline):
     model = Comment
