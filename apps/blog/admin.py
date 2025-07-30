@@ -198,6 +198,12 @@ class PostAdmin(admin.ModelAdmin):
             "https://cdn.tiny.cloud/1/1acr1awsu4kzcz8efm1e45ma95nlrpqwbspquyy9e8tev24a/tinymce/7/tinymce.min.js",
             "js/tinymce_init.js",
         ]
+    
+    def get_inline_instances(self, request, obj=None):
+        # no comments inline if it is an add post form
+        if obj is None:
+            return []
+        return super().get_inline_instances(request, obj)
 
     def delete_model(self, request, obj):
         if obj.image:
