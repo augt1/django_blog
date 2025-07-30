@@ -9,7 +9,7 @@ from django.db.models import Count
 
 from apps.accounts.forms import UserAdminForm
 from apps.blog.admin import PostInline
-from apps.core.utils import delete_image_and_thumbnails
+from apps.core.image_utils import delete_image_and_thumbnails
 
 User = get_user_model()
 

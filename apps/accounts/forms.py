@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from apps.core.utils import delete_image_and_thumbnails
+from apps.core.image_utils import delete_image_and_thumbnails
 
 User = get_user_model()
 

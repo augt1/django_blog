@@ -3,7 +3,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
 
-from apps.accounts.utils import user_avatar_upload_path
+from apps.core.upload_paths import user_avatar_upload_path
 from apps.core.validators import validate_image_file, validate_image_size
 
 import uuid

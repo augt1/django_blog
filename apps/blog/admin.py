@@ -9,7 +9,7 @@ from easy_thumbnails.files import get_thumbnailer
 from apps.blog.forms import PostAdminForm
 from apps.blog.models import Comment, Post, Tag
 from apps.core.akismet_client import AkismetClient
-from apps.core.utils import delete_image_and_thumbnails
+from apps.core.image_utils import delete_image_and_thumbnails
 
 
 User = get_user_model()

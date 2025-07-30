@@ -3,8 +3,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.blog.models import Comment, Post, Tag
-from apps.blog.utils import assign_user_groups, handle_old_author, handle_old_editors
-from apps.core.utils import delete_image_and_thumbnails
+from apps.accounts.group_assignments import assign_user_groups, handle_old_author, handle_old_editors
+from apps.core.image_utils import delete_image_and_thumbnails
 
 User = get_user_model()
 

@@ -5,7 +5,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
 
-from apps.blog.utils import post_image_upload_path
+from apps.core.upload_paths import post_image_upload_path
 from apps.core.validators import validate_image_file, validate_image_size
 
 from .managers import PublishedManager
@@ -59,7 +59,7 @@ class Post(models.Model):
             if self.status == self.Status.PUBLISHED
             else self.created_at
         )
-        #make sure post links are in utc
+        # make sure post links are in utc
         dt_utc = dt.astimezone(datetime.timezone.utc)
 
         return reverse(

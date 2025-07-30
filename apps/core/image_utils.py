@@ -1,6 +1,5 @@
 import os
-import requests
-from django.conf import settings
+
 from django.core.files.storage import default_storage
 from easy_thumbnails.files import get_thumbnailer
 
@@ -26,23 +25,3 @@ def delete_image_and_thumbnails(instance, delete=False):
             pass #directory not empty, pass
 
 
-### TURNSTILE ###
-def verify_turnistile_token(request):
-
-    url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
-
-    token = request.POST.get("cf-turnstile-response")
-
-    data = {
-        "secret": settings.TURNSTILE_SECRET_KEY,
-        "response": token,
-    }
-
-    try:
-        response = requests.post(url, data=data)
-        response_data = response.json()
-        return response_data.get("success", False)
-
-    except requests.RequestException as e:
-        print(f"Error verifying Turnstile token: {e}")
-        return False

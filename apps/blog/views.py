@@ -2,19 +2,19 @@ import datetime
 import zoneinfo
 from datetime import datetime, time
 
-from django.utils import timezone
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.contrib import messages
 
 from apps.blog.forms import CommentForm, FilterForm, PostForm
 from apps.core.akismet_client import AkismetClient, AkismetClientError
-from apps.core.utils import verify_turnistile_token
+from apps.core.turnstile_client import verify_turnstile_token
 
 from .models import Post
 
@@ -38,24 +38,29 @@ def posts_list(request):
 
     if filter_form.is_valid():
 
-        authors_query = filter_form.cleaned_data.get("authors") 
+        authors_query = filter_form.cleaned_data.get("authors")
         tags_query = filter_form.cleaned_data.get("tags")
         published_from_query = filter_form.cleaned_data.get("published_from", "")
         published_to_query = filter_form.cleaned_data.get("published_to", "")
 
         if published_from_query:
-            published_posts = published_posts.filter(published_at__gte=published_from_query)
+            published_posts = published_posts.filter(
+                published_at__gte=published_from_query
+            )
         if published_to_query:
-            published_posts = published_posts.filter(published_at__lte=published_to_query)
+            published_posts = published_posts.filter(
+                published_at__lte=published_to_query
+            )
         if authors_query:
             published_posts = published_posts.filter(author_id__in=authors_query)
         if tags_query:
-            published_posts = published_posts.filter(tags__slug__in=tags_query).distinct()
+            published_posts = published_posts.filter(
+                tags__slug__in=tags_query
+            ).distinct()
 
     paginator = Paginator(published_posts, 5)
     page_number = request.GET.get("page")
     posts = paginator.get_page(page_number)
-
 
     context = {
         "posts": posts,
@@ -70,15 +75,18 @@ def post_detail(request, year, month, day, slug):
 
     dt = datetime(year, month, day)
 
-       
-    start_dt = timezone.make_aware(datetime.combine(dt, time.min), timezone=zoneinfo.ZoneInfo('UTC'))
-    end_dt = timezone.make_aware(datetime.combine(dt, time.max), timezone=zoneinfo.ZoneInfo('UTC'))
-    
+    start_dt = timezone.make_aware(
+        datetime.combine(dt, time.min), timezone=zoneinfo.ZoneInfo("UTC")
+    )
+    end_dt = timezone.make_aware(
+        datetime.combine(dt, time.max), timezone=zoneinfo.ZoneInfo("UTC")
+    )
+
     post = get_object_or_404(
         qs,
         status=Post.Status.PUBLISHED,
         published_at__range=(start_dt, end_dt),
-        slug=slug
+        slug=slug,
     )
 
     comments = post.comments.filter(active=True)
@@ -86,10 +94,9 @@ def post_detail(request, year, month, day, slug):
     comment_form = CommentForm()
 
     return render(
-        request, "blog/post_detail.html", {
-            "post": post, 
-            "comments": comments,
-            "comment_form": comment_form}
+        request,
+        "blog/post_detail.html",
+        {"post": post, "comments": comments, "comment_form": comment_form},
     )
 
 
@@ -126,14 +133,19 @@ def edit_post_view(request, slug):
 def create_comment_view(request, post_id):
 
     post = get_object_or_404(Post, id=post_id)
-
     form = CommentForm(request.POST)
 
-    verified_token = verify_turnistile_token(request)
-
-    if not verified_token:
-        form.add_error(None, "Verification failed. Please try submitting the comment again.")
-
+    verified_turnstile_token = verify_turnstile_token(request)
+    if not verified_turnstile_token:
+        form.add_error(
+            None, "Verification failed. Please try submitting the comment again."
+        )
+        comments = post.comments.filter(active=True)
+        return render(
+            request,
+            "blog/post_detail.html",
+            {"comment_form": form, "post": post, "comments": comments},
+        )
 
     if form.is_valid():
         comment = form.save(commit=False)
@@ -141,7 +153,7 @@ def create_comment_view(request, post_id):
         comment.user_ip = request.META.get("REMOTE_ADDR")
 
         akismet_client = AkismetClient()
-        
+
         try:
 
             is_valid_key = akismet_client.verify_key()

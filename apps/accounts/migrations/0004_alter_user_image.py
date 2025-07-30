@@ -3,7 +3,7 @@
 import django.core.validators
 from django.db import migrations, models
 
-import apps.accounts.utils
+import apps.core.upload_paths
 import apps.core.validators
 
 
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 help_text="Upload a profile picture (optional).",
                 null=True,
-                upload_to=apps.accounts.utils.user_avatar_upload_path,
+                upload_to=apps.core.upload_paths.user_avatar_upload_path,
                 validators=[
                     django.core.validators.FileExtensionValidator(
                         allowed_extensions=["jpg", "jpeg", "png", "gif"]
