@@ -2,8 +2,12 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from apps.accounts.group_assignments import (
+    assign_user_groups,
+    handle_old_author,
+    handle_old_editors,
+)
 from apps.blog.models import Comment, Post, Tag
-from apps.accounts.group_assignments import assign_user_groups, handle_old_author, handle_old_editors
 from apps.core.image_utils import delete_image_and_thumbnails
 
 User = get_user_model()
@@ -11,14 +15,14 @@ User = get_user_model()
 
 class FilterForm(forms.Form):
     authors = forms.ModelMultipleChoiceField(
-        queryset=User.objects.filter(is_staff=True),
+        queryset=User.objects.none(),
         required=False,
         widget=forms.SelectMultiple(attrs={"class": "select2"}),
         label="Authors",
     )
 
     tags = forms.MultipleChoiceField(
-        choices=[(tag.slug, tag.name) for tag in Tag.objects.all()],
+        choices=[],
         required=False,
         widget=forms.SelectMultiple(attrs={"class": "select2"}),
         label="Tags",
@@ -35,6 +39,13 @@ class FilterForm(forms.Form):
         label="Published To",
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tags"].choices = [
+            (tag.slug, tag.name) for tag in Tag.objects.all()
+        ]
+        self.fields["authors"].queryset = User.objects.filter(is_staff=True)
+
     def clean_published_from(self):
         from_date = self.cleaned_data.get("published_from")
         if from_date:
@@ -44,7 +55,7 @@ class FilterForm(forms.Form):
             )
 
             # make aware, default timezone to seting TIME_ZONE
-            local_time = timezone.make_aware(from_date_datetime)   #perito? 
+            local_time = timezone.make_aware(from_date_datetime)
 
             return local_time
         else:
@@ -60,7 +71,6 @@ class FilterForm(forms.Form):
             # make aware, default timezone to seting TIME_ZONE
             aware_time = timezone.make_aware(to_date_datetime)
             local_time = timezone.localtime(aware_time)
-
 
             return local_time
         else:
