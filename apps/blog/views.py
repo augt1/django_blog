@@ -155,39 +155,41 @@ def create_comment_view(request, post_id):
         akismet_client = AkismetClient()
 
         try:
+            #  no need to run verify_key on every call, can run when inserting key in the app, on demand or periodically
+            # is_valid_key = akismet_client.verify_key()
 
-            is_valid_key = akismet_client.verify_key()
+            # if not is_valid_key:
+            #     form.add_error(None, "A server error occured.")
+            #     print("Invalid Akismet API key.")
+            # else:
+            akismet_data = {
+                "user_ip": comment.user_ip,
+                "comment_content": form.cleaned_data.get("content"),
+                "comment_author": form.cleaned_data.get("name"),
+                "comment_type": "comment",
+                "user_agent": request.META.get("HTTP_USER_AGENT", ""),
+                "referrer": request.META.get("HTTP_REFERER", ""),
+            }
 
-            if not is_valid_key:
-                form.add_error(None, "A server error occured.")
-                print("Invalid Akismet API key.")
-            else:
+            result = akismet_client.comment_check(**akismet_data)
+            status = result["status"]
+            message = result["message"]
 
-                result = akismet_client.comment_check(
-                    user_ip=comment.user_ip,
-                    comment_content=form.cleaned_data.get("content"),
-                    comment_author=form.cleaned_data.get("name"),
-                    comment_type="comment",
-                )
-                message = result["message"]
-
-                if result["status"] == "spam":
-                    print("SPAAAAM")
-                    comment.is_spam = True
-                    comment.active = False
-                    messages.error(request, message)
-                    comment.save()
-
-                if result["status"] == "discard":
-                    messages.error(request, message)
-                
-                if result['status'] == 'ham':
-                    messages.success(request, message)
-                    comment.save()
-
-
+            if status == "discard":
+                messages.error(request, message)
                 return redirect(post.get_absolute_url())
 
+            if status == "spam":
+                comment.is_spam = True
+                comment.active = False
+                messages.error(request, message)
+            else:  # ham
+                comment.is_spam = False
+                comment.active = True
+                messages.success(request, message)
+
+            comment.save()
+            return redirect(post.get_absolute_url())
 
         except AkismetClientError as e:
             message = f"Akismet error: {str(e)}"
@@ -197,12 +199,9 @@ def create_comment_view(request, post_id):
             message = f"An unexpected error occurred: {str(e)}"
             messages.error(request, message)
 
-    
     comments = post.comments.filter(active=True)
-    
     return render(
-        request, "blog/post_detail.html", {
-            "comment_form": form, 
-            "post": post,
-            "comments": comments}
+        request,
+        "blog/post_detail.html",
+        {"comment_form": form, "post": post, "comments": comments},
     )
